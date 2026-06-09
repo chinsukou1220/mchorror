@@ -165,95 +165,95 @@ public class HorrorSteveAi {
                     }
                     
                     // --- 視線と画面内判定 ---
-                    boolean canSee = owner.getSensing().hasLineOfSight(target);
-                    
-                    // プレイヤーとの距離を計算
-                    double distanceToPlayer = owner.distanceTo(target);
-                    
-                    // プレイヤーの向いている方向と、プレイヤーからスティーブへの方向の内積（Dot Product）を計算
-                    Vec3 viewVector = target.getViewVector(1.0F).normalize();
-                    Vec3 vectorToEntity = owner.getEyePosition().subtract(target.getEyePosition()).normalize();
-                    double dotProduct = viewVector.dot(vectorToEntity);
-                    
-                    // 距離に応じて判定基準を変更
-                    // 5ブロック以下：0.0（画面端） / 0秒(0ティック)
-                    // 10ブロック以下：0.3 / 0.1秒(2ティック)
-                    // 20ブロック以上：0.9 / 1秒(20ティック)
-                    // その中間（10〜20未満）：0.8 / 1秒(20ティック)
-                    double thresholdDot;
-                    int thresholdTicks;
-                    
-                    if (distanceToPlayer <= 5.0) {
-                        thresholdDot = 0.1;
-                        thresholdTicks = 0;
-                    } else if (distanceToPlayer <= 10.0) {
-                        thresholdDot = 0.3;
-                        thresholdTicks = 2;
-                    } else if (distanceToPlayer >= 20.0) {
-                        thresholdDot = 0.9;
-                        thresholdTicks = 20;
-                    } else {
-                        thresholdDot = 0.8;
-                        thresholdTicks = 20;
-                    }
-                    
-                    // 基準以上なら画面に捉えたと判定
-                    boolean isLookingAtMe = dotProduct > thresholdDot;
-                    // 視界の半球（前方）にいるかどうかの判定（内積が0より大きければ前方）
-                    boolean isInFrontOfPlayer = dotProduct > 0.0;
-                    
-                    if (canSee && isInFrontOfPlayer) {
-                        if (!owner.hasBeenSeenSinceWarp) {
-                            // 【最優先】まだ見つかってない（観察中）かつプレイヤーの前にいるなら、即座に立ち止まって透明化を解除する
-                            owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-                            owner.setInvisible(false);
-                            
-                            // その上で、プレイヤーがこちらをしっかり見つめている（目が合っている）かを判定する
-                            if (isLookingAtMe) {
-                                owner.eyeContactTicks++; // 目が合っている時間をカウントアップ
+                    if (!owner.isActionActive) {
+                        boolean canSee = owner.getSensing().hasLineOfSight(target);
+                        
+                        // プレイヤーとの距離を計算
+                        double distanceToPlayer = owner.distanceTo(target);
+                        
+                        // プレイヤーの向いている方向と、プレイヤーからスティーブへの方向の内積（Dot Product）を計算
+                        Vec3 viewVector = target.getViewVector(1.0F).normalize();
+                        Vec3 vectorToEntity = owner.getEyePosition().subtract(target.getEyePosition()).normalize();
+                        double dotProduct = viewVector.dot(vectorToEntity);
+                        
+                        // 距離に応じて判定基準を変更
+                        double thresholdDot;
+                        int thresholdTicks;
+                        
+                        if (distanceToPlayer <= 5.0) {
+                            thresholdDot = 0.1;
+                            thresholdTicks = 0;
+                        } else if (distanceToPlayer <= 10.0) {
+                            thresholdDot = 0.3;
+                            thresholdTicks = 2;
+                        } else if (distanceToPlayer >= 20.0) {
+                            thresholdDot = 0.9;
+                            thresholdTicks = 20;
+                        } else {
+                            thresholdDot = 0.8;
+                            thresholdTicks = 20;
+                        }
+                        
+                        // 基準以上なら画面に捉えたと判定
+                        boolean isLookingAtMe = dotProduct > thresholdDot;
+                        // 視界の半球（前方）にいるかどうかの判定（内積が0より大きければ前方）
+                        boolean isInFrontOfPlayer = dotProduct > 0.0;
+                        
+                        if (canSee && isInFrontOfPlayer) {
+                            if (!owner.hasBeenSeenSinceWarp) {
+                                // 【最優先】まだ見つかってない（観察中）かつプレイヤーの前にいるなら、即座に立ち止まって透明化を解除する
+                                owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+                                owner.setInvisible(false);
                                 
-                                // 距離に応じた時間（ティック数）見つめ合った場合のみ「見られた」と判定
-                                if (owner.eyeContactTicks >= thresholdTicks) {
-                                    if (distanceToPlayer <= 7.0) {
-                                        // 7ブロック以内の近距離で見られた場合は、即座にワープせず突進モードに移行
-                                        owner.isChargingToAttack = true;
-                                        owner.chargeTicks = 0;
-                                        owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-                                    } else {
-                                        owner.hasBeenSeenSinceWarp = true;
-                                        owner.timeWhenSeen = level.getGameTime(); // 通常の逃走開始時間を記録
-                                        owner.isActionActive = true; // アクション開始を宣言
+                                // その上で、プレイヤーがこちらをしっかり見つめている（目が合っている）かを判定する
+                                if (isLookingAtMe) {
+                                    owner.eyeContactTicks++; // 目が合っている時間をカウントアップ
+                                    
+                                    // 距離に応じた時間（ティック数）見つめ合った場合のみ「見られた」と判定
+                                    if (owner.eyeContactTicks >= thresholdTicks) {
+                                        if (distanceToPlayer <= 7.0) {
+                                            // 7ブロック以内の近距離で見られた場合は、即座にワープせず突進モードに移行
+                                            owner.isChargingToAttack = true;
+                                            owner.chargeTicks = 0;
+                                            owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+                                            // 突っ込んでくるときの共通現象として暗闇を付与
+                                            target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 200, 0, false, false));
+                                        } else {
+                                            owner.hasBeenSeenSinceWarp = true;
+                                            owner.timeWhenSeen = level.getGameTime(); // 通常の逃走開始時間を記録
+                                            owner.isActionActive = true; // アクション開始を宣言
+                                        }
                                     }
+                                } else {
+                                    // 視界には入っているが、カメラはそっぽを向いている場合は見つめ合いカウントをリセット
+                                    owner.eyeContactTicks = 0;
                                 }
                             } else {
-                                // 視界には入っているが、カメラはそっぽを向いている場合は見つめ合いカウントをリセット
-                                owner.eyeContactTicks = 0;
+                                // すでに見つかった後（逃走中）
+                                // 逃走中の透明化タイミングは ActionController が管理するためここでは上書きしない
                             }
                         } else {
-                            // すでに見つかった後（逃走中）
-                            // 逃走中の透明化タイミングは ActionController が管理するためここでは上書きしない
-                        }
-                    } else {
-                        // 壁の裏など完全に視線が遮られている場合、または視線は通っているが「プレイヤーの背後」にいる場合
-                        owner.eyeContactTicks = 0;
-                        
-                        if (!owner.hasBeenSeenSinceWarp) {
-                            if (!canSee) {
-                                // 射線が通っていない（壁の裏などにワープした）場合は、射線が通るまで近づく
-                                owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(target, false), 1.2f, 3));
-                            } else {
-                                // 射線が通った場合
-                                if (owner.isAggressiveStalking) {
-                                    // GoBehindモードならそのまま3ブロックまで詰める
+                            // 壁の裏など完全に視線が遮られている場合、または視線は通っているが「プレイヤーの背後」にいる場合
+                            owner.eyeContactTicks = 0;
+                            
+                            if (!owner.hasBeenSeenSinceWarp) {
+                                if (!canSee) {
+                                    // 射線が通っていない（壁の裏などにワープした）場合は、射線が通るまで近づく
                                     owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(target, false), 1.2f, 3));
                                 } else {
-                                    // ランダムワープなら射線が通った場所で立ち止まって見つめる
-                                    owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+                                    // 射線が通った場合
+                                    if (owner.isAggressiveStalking) {
+                                        // GoBehindモードならそのまま3ブロックまで詰める
+                                        owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(target, false), 1.2f, 3));
+                                    } else {
+                                        // ランダムワープなら射線が通った場所で立ち止まって見つめる
+                                        owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+                                    }
                                 }
+                                
+                                // 壁の裏（canSee=false）なら透明化、射線が通った（canSee=true）なら実体化
+                                owner.setInvisible(!canSee);
                             }
-                            
-                            // 壁の裏（canSee=false）なら透明化、射線が通った（canSee=true）なら実体化
-                            owner.setInvisible(!canSee);
                         }
                     }
                     

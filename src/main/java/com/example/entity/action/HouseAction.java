@@ -175,12 +175,16 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
 
     private void endAction(ServerLevel level, HorrorSteveEntity owner) {
         owner.isActionActive = false;
+        owner.lastWarpTime = level.getGameTime();
     }
 
     @Override
     protected void stop(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
         super.stop(level, owner, gameTime);
         // 万が一、途中で強制終了された場合でも必ずフラグを下ろす
+        if (owner.isActionActive) {
+            owner.lastWarpTime = gameTime;
+        }
         owner.isActionActive = false;
     }
 

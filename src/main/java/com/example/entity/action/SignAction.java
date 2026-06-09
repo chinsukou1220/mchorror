@@ -89,6 +89,7 @@ public class SignAction extends Behavior<HorrorSteveEntity> {
         }
         
         owner.isActionActive = false;
+        owner.lastWarpTime = level.getGameTime();
     }
 
     @Override

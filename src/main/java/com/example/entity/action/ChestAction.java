@@ -35,6 +35,7 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
         Optional<List<Player>> optionalPlayers = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS);
         if (!optionalPlayers.isPresent() || optionalPlayers.get().isEmpty()) {
             owner.isActionActive = false;
+            owner.lastWarpTime = level.getGameTime();
             return;
         }
 
@@ -56,6 +57,7 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
 
         if (chestPositions.isEmpty()) {
             owner.isActionActive = false;
+            owner.lastWarpTime = level.getGameTime();
             return;
         }
 
@@ -135,6 +137,7 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
 
         // アニメーション以外の行動は即時終了
         owner.isActionActive = false;
+        owner.lastWarpTime = level.getGameTime();
     }
 
     @Override
@@ -151,6 +154,7 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
                 level.blockEvent(this.openedChestPos, Blocks.CHEST, 1, 0);
                 this.openedChestPos = null;
                 owner.isActionActive = false;
+                owner.lastWarpTime = level.getGameTime();
             }
         }
     }
@@ -159,6 +163,9 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
     protected void stop(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
         super.stop(level, owner, gameTime);
         // 万が一、途中で強制終了された場合でも必ずフラグを下ろす
+        if (owner.isActionActive) {
+            owner.lastWarpTime = gameTime;
+        }
         owner.isActionActive = false;
         
         // 念のため開けっ放しのチェストがあれば閉じる

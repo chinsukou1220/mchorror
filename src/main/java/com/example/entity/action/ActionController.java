@@ -29,7 +29,10 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         CHEST,
         HOUSE,
         SIGN,
-        SOUND
+        SOUND,
+        UNDERGROUND,
+        CAVE_AMBUSH,
+        WALK_AWAY
     }
     
     // 呼び出すための具体的なアクションを保持しておく
@@ -41,6 +44,9 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
     private final HouseAction houseAction = new HouseAction();
     private final SignAction signAction = new SignAction();
     private final SoundAction soundAction = new SoundAction();
+    private final UndergroundAction undergroundAction = new UndergroundAction();
+    private final CaveDiggingAmbushBehavior caveAmbushBehavior = new CaveDiggingAmbushBehavior();
+    private final WalkAwayBehavior walkAwayBehavior = new WalkAwayBehavior();
     
     // 次に実行するアクションの種類
     private ActionType currentAction = ActionType.NONE;
@@ -104,6 +110,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                 owner.isWaitingForWarp = true; // 次の出番まで待機
                 owner.hasBeenSeenSinceWarp = false;
                 owner.isActionActive = false;
+                owner.lastWarpTime = level.getGameTime();
                 owner.isAggressiveStalking = false;
                 return false; // 次のアクション抽選に戻る
             }
@@ -124,6 +131,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     owner.isWaitingForWarp = true;
                     owner.hasBeenSeenSinceWarp = false;
                     owner.isActionActive = false;
+                    owner.lastWarpTime = level.getGameTime();
                     owner.isAggressiveStalking = false;
                     return false;
                 }
@@ -136,6 +144,11 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             // --- アクションの実行中判定 ---
             // 既に何らかのアクション（逃走など）が実行中の場合は、新しい自発的アクションを重ねない
             if (owner.isActionActive) {
+                return false;
+            }
+            
+            // アクション待機中（透明化して遠くにいる状態）でない場合は新規アクションを起こさない
+            if (!owner.isWaitingForWarp) {
                 return false;
             }
             
@@ -152,54 +165,93 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             }
             // --- 通常のアクション（プレイヤーが動いている時） ---
             else {
-                // 通常状態でのランダムワープ抽選（約100秒に1回程度：0.05%）
-                if (Math.random() < 0.0005 * multiplier) {
-                    this.currentAction = ActionType.WARP;
-                    return true;
+                // プレイヤーの居場所を判定
+                boolean isUnderground = false;
+                boolean isNether = level.dimension() == net.minecraft.world.level.Level.NETHER;
+                if (players.isPresent() && !players.get().isEmpty()) {
+                    isUnderground = com.example.util.UndergroundDetector.isPlayerUnderground(level, players.get().get(0));
                 }
                 
-                // プレイヤーの置いたブロックを設置するアクション（十数分に1回程度: 0.005%）
-                if (Math.random() < 0.00005 * multiplier) {
-                    this.currentAction = ActionType.PLACE;
-                    return true;
-                }
-                
-                // 置いたブロックを全て破壊するアクション（さらに珍しい: 0.002%）
-                if (Math.random() < 0.00002 * multiplier) {
-                    this.currentAction = ActionType.BREAK;
-                    return true;
-                }
+                if (isUnderground || isNether) {
+                    // ==========================================
+                    // 洞窟（地下）・ネザー専用アクション
+                    // ==========================================
+                    
+                    // 【新規】壁を掘り破ってくる恐ろしい強襲アクション（洞窟限定）
+                    // 確率: 5% / ティック (テスト用)
+                    if (isUnderground && Math.random() < 0.05 * multiplier) {
+                        this.currentAction = ActionType.CAVE_AMBUSH;
+                        return true;
+                    }
+                    
+                    // 【新規】透明で近づき足音だけ残して去り、遠くで見つめるアクション（洞窟・ネザー限定）
+                    // 確率: 5% / ティック (テスト用)
+                    if (Math.random() < 0.05 * multiplier) {
+                        this.currentAction = ActionType.WALK_AWAY;
+                        return true;
+                    }
 
-                // チェストに対する怪奇現象やイタズラ（十数分に1回程度: 0.005%）
-                if (Math.random() < 0.00005 * multiplier) {
-                    this.currentAction = ActionType.CHEST;
-                    return true;
-                }
+                    // 洞窟（地下）限定のポルターガイストアクション
+                    // 確率: 10% / ティック (テスト用)
+                    if (isUnderground && Math.random() < 0.1 * multiplier) {
+                        this.currentAction = ActionType.UNDERGROUND;
+                        return true;
+                    }
+                    
+                } else {
+                    // ==========================================
+                    // 地上（通常）アクション
+                    // ==========================================
+                    
+                    // 通常状態でのランダムワープ抽選（約100秒に1回程度：0.0005）
+                    if (Math.random() < 0.0005 * multiplier) {
+                        this.currentAction = ActionType.WARP;
+                        return true;
+                    }
+                    
+                    // プレイヤーの置いたブロックを設置するアクション
+                    if (Math.random() < 0.00005 * multiplier) {
+                        this.currentAction = ActionType.PLACE;
+                        return true;
+                    }
+                    
+                    // 置いたブロックを全て破壊するアクション
+                    if (Math.random() < 0.00002 * multiplier) {
+                        this.currentAction = ActionType.BREAK;
+                        return true;
+                    }
 
-                // 家にいる時限定のホラーアクション（約8分に1回程度: 0.01%）
-                if (Math.random() < 0.0001 * multiplier) {
-                    if (players.isPresent() && !players.get().isEmpty()) {
-                        if (com.example.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
-                            this.currentAction = ActionType.HOUSE;
-                            return true;
+                    // チェストに対する怪奇現象やイタズラ
+                    if (Math.random() < 0.00005 * multiplier) {
+                        this.currentAction = ActionType.CHEST;
+                        return true;
+                    }
+
+                    // 家にいる時限定のホラーアクション
+                    if (Math.random() < 0.0001 * multiplier) {
+                        if (players.isPresent() && !players.get().isEmpty()) {
+                            if (com.example.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
+                                this.currentAction = ActionType.HOUSE;
+                                return true;
+                            }
                         }
                     }
-                }
-                
-                // 看板設置アクション（家にいる時限定、十数分に1回程度: 0.005%）
-                if (Math.random() < 0.00005 * multiplier) {
-                    if (players.isPresent() && !players.get().isEmpty()) {
-                        if (com.example.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
-                            this.currentAction = ActionType.SIGN;
-                            return true;
+                    
+                    // 看板設置アクション（家にいる時限定）
+                    if (Math.random() < 0.00005 * multiplier) {
+                        if (players.isPresent() && !players.get().isEmpty()) {
+                            if (com.example.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
+                                this.currentAction = ActionType.SIGN;
+                                return true;
+                            }
                         }
                     }
-                }
-                
-                // 音を鳴らすホラーアクション（数分に1回程度: 0.02% -> 約4分に1回）
-                if (Math.random() < 0.0002 * multiplier) {
-                    this.currentAction = ActionType.SOUND;
-                    return true;
+                    
+                    // 音を鳴らすホラーアクション
+                    if (Math.random() < 0.0002 * multiplier) {
+                        this.currentAction = ActionType.SOUND;
+                        return true;
+                    }
                 }
             }
             
@@ -228,6 +280,12 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             this.signAction.tryStart(level, owner, gameTime);
         } else if (this.currentAction == ActionType.SOUND) {
             this.soundAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.UNDERGROUND) {
+            this.undergroundAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.CAVE_AMBUSH) {
+            this.caveAmbushBehavior.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.WALK_AWAY) {
+            this.walkAwayBehavior.tryStart(level, owner, gameTime);
         }
         this.currentAction = ActionType.NONE; // リセット
     }
@@ -243,6 +301,9 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.houseAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.signAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.soundAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.undergroundAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.caveAmbushBehavior.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.walkAwayBehavior.getStatus() == Behavior.Status.RUNNING) return true;
         
         return owner.isActionActive;
     }
@@ -259,6 +320,9 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.houseAction.getStatus() == Behavior.Status.RUNNING) this.houseAction.tickOrStop(level, owner, gameTime);
         if (this.signAction.getStatus() == Behavior.Status.RUNNING) this.signAction.tickOrStop(level, owner, gameTime);
         if (this.soundAction.getStatus() == Behavior.Status.RUNNING) this.soundAction.tickOrStop(level, owner, gameTime);
+        if (this.undergroundAction.getStatus() == Behavior.Status.RUNNING) this.undergroundAction.tickOrStop(level, owner, gameTime);
+        if (this.caveAmbushBehavior.getStatus() == Behavior.Status.RUNNING) this.caveAmbushBehavior.tickOrStop(level, owner, gameTime);
+        if (this.walkAwayBehavior.getStatus() == Behavior.Status.RUNNING) this.walkAwayBehavior.tickOrStop(level, owner, gameTime);
     }
 
     @Override
@@ -275,6 +339,9 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.houseAction.getStatus() == Behavior.Status.RUNNING) this.houseAction.doStop(level, owner, gameTime);
         if (this.signAction.getStatus() == Behavior.Status.RUNNING) this.signAction.doStop(level, owner, gameTime);
         if (this.soundAction.getStatus() == Behavior.Status.RUNNING) this.soundAction.doStop(level, owner, gameTime);
+        if (this.undergroundAction.getStatus() == Behavior.Status.RUNNING) this.undergroundAction.doStop(level, owner, gameTime);
+        if (this.caveAmbushBehavior.getStatus() == Behavior.Status.RUNNING) this.caveAmbushBehavior.doStop(level, owner, gameTime);
+        if (this.walkAwayBehavior.getStatus() == Behavior.Status.RUNNING) this.walkAwayBehavior.doStop(level, owner, gameTime);
 
         // 状態を完全にリセット
         owner.isActionActive = false;

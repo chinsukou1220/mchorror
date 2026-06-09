@@ -49,6 +49,7 @@ public class RandomWarpBehavior extends Behavior<HorrorSteveEntity> {
                 // 絶好の壁裏ポイントが見つかった場合、そこにワープする
                 Vec3 pos = peekPos.get();
                 owner.teleportTo(pos.x, pos.y, pos.z);
+                owner.setInvisible(false); // 必ず透明化を解除する
                 
                 // --- 確実なガン見処理（アプローチ1） ---
                 // プレイヤーの方を向くための角度（Yaw と Pitch）を数学的に計算

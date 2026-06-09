@@ -60,8 +60,9 @@ public class SoundAction extends Behavior<HorrorSteveEntity> {
             level.playSound(null, x, y, z, selectedSound, SoundSource.HOSTILE, 1.0f, 1.0f);
         }
         
-        // アクションを即座に終了する
+        // アクションを即座に終了し、クールダウンを開始する
         owner.isActionActive = false;
+        owner.lastWarpTime = level.getGameTime();
     }
 
     @Override

@@ -49,6 +49,7 @@ public class BreakAction extends Behavior<HorrorSteveEntity> {
         
         // アクション終了処理
         owner.isActionActive = false;
+        owner.lastWarpTime = level.getGameTime();
     }
 
     @Override
