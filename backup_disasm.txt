@@ -1,0 +1,97 @@
+﻿Compiled from "BackUpIfTooClose.java"
+public class net.minecraft.world.entity.ai.behavior.BackUpIfTooClose {
+  public net.minecraft.world.entity.ai.behavior.BackUpIfTooClose();
+    Code:
+       0: aload_0
+       1: invokespecial #24                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static net.minecraft.world.entity.ai.behavior.OneShot<net.minecraft.world.entity.Mob> create(int, float);
+    Code:
+       0: iload_0
+       1: fload_1
+       2: invokedynamic #51,  0             // InvokeDynamic #0:apply:(IF)Ljava/util/function/Function;
+       7: invokestatic  #54                 // Method net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder.create:(Ljava/util/function/Function;)Lnet/minecraft/world/entity/ai/behavior/OneShot;
+      10: areturn
+
+  private static com.mojang.datafixers.kinds.App method_46902(int, float, net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder$Instance);
+    Code:
+       0: aload_2
+       1: aload_2
+       2: getstatic     #63                 // Field net/minecraft/world/entity/ai/memory/MemoryModuleType.WALK_TARGET:Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;
+       5: invokevirtual #67                 // Method net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance.absent:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Lnet/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder;
+       8: aload_2
+       9: getstatic     #70                 // Field net/minecraft/world/entity/ai/memory/MemoryModuleType.LOOK_TARGET:Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;
+      12: invokevirtual #73                 // Method net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance.registered:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Lnet/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder;
+      15: aload_2
+      16: getstatic     #76                 // Field net/minecraft/world/entity/ai/memory/MemoryModuleType.ATTACK_TARGET:Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;
+      19: invokevirtual #79                 // Method net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance.present:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Lnet/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder;
+      22: aload_2
+      23: getstatic     #82                 // Field net/minecraft/world/entity/ai/memory/MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES:Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;
+      26: invokevirtual #79                 // Method net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance.present:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Lnet/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder;
+      29: invokevirtual #86                 // Method net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance.group:(Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;)Lcom/mojang/datafixers/Products$P4;
+      32: aload_2
+      33: aload_2
+      34: iload_0
+      35: fload_1
+      36: invokedynamic #98,  0             // InvokeDynamic #1:apply:(Lnet/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance;IF)Lcom/mojang/datafixers/util/Function4;
+      41: invokevirtual #101                // Method com/mojang/datafixers/Products$P4.apply:(Lcom/mojang/datafixers/kinds/Applicative;Lcom/mojang/datafixers/util/Function4;)Lcom/mojang/datafixers/kinds/App;
+      44: areturn
+
+  private static net.minecraft.world.entity.ai.behavior.declarative.Trigger method_46903(net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder$Instance, int, float, net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor, net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor, net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor, net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor);
+    Code:
+       0: aload_0
+       1: aload         5
+       3: iload_1
+       4: aload         6
+       6: aload         4
+       8: fload_2
+       9: invokedynamic #119,  0            // InvokeDynamic #2:trigger:(Lnet/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance;Lnet/minecraft/world/entity/ai/behavior/declarative/MemoryAccessor;ILnet/minecraft/world/entity/ai/behavior/declarative/MemoryAccessor;Lnet/minecraft/world/entity/ai/behavior/declarative/MemoryAccessor;F)Lnet/minecraft/world/entity/ai/behavior/declarative/Trigger;
+      14: areturn
+
+  private static boolean method_46904(net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder$Instance, net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor, int, net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor, net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor, float, net.minecraft.server.level.ServerLevel, net.minecraft.world.entity.Mob, long);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #127                // Method net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance.get:(Lnet/minecraft/world/entity/ai/behavior/declarative/MemoryAccessor;)Ljava/lang/Object;
+       5: checkcast     #129                // class net/minecraft/world/entity/LivingEntity
+       8: astore        10
+      10: aload         10
+      12: aload         7
+      14: iload_2
+      15: i2d
+      16: invokevirtual #133                // Method net/minecraft/world/entity/LivingEntity.closerThan:(Lnet/minecraft/world/entity/Entity;D)Z
+      19: ifeq          86
+      22: aload_0
+      23: aload_3
+      24: invokevirtual #127                // Method net/minecraft/world/entity/ai/behavior/declarative/BehaviorBuilder$Instance.get:(Lnet/minecraft/world/entity/ai/behavior/declarative/MemoryAccessor;)Ljava/lang/Object;
+      27: checkcast     #135                // class net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities
+      30: aload         10
+      32: invokevirtual #139                // Method net/minecraft/world/entity/ai/memory/NearestVisibleLivingEntities.contains:(Lnet/minecraft/world/entity/LivingEntity;)Z
+      35: ifeq          86
+      38: aload         4
+      40: new           #141                // class net/minecraft/world/entity/ai/behavior/EntityTracker
+      43: dup
+      44: aload         10
+      46: iconst_1
+      47: invokespecial #144                // Method net/minecraft/world/entity/ai/behavior/EntityTracker."<init>":(Lnet/minecraft/world/entity/Entity;Z)V
+      50: invokevirtual #150                // Method net/minecraft/world/entity/ai/behavior/declarative/MemoryAccessor.set:(Ljava/lang/Object;)V
+      53: aload         7
+      55: invokevirtual #156                // Method net/minecraft/world/entity/Mob.getMoveControl:()Lnet/minecraft/world/entity/ai/control/MoveControl;
+      58: fload         5
+      60: fneg
+      61: fconst_0
+      62: invokevirtual #162                // Method net/minecraft/world/entity/ai/control/MoveControl.strafe:(FF)V
+      65: aload         7
+      67: aload         7
+      69: invokevirtual #166                // Method net/minecraft/world/entity/Mob.getYRot:()F
+      72: aload         7
+      74: getfield      #169                // Field net/minecraft/world/entity/Mob.yHeadRot:F
+      77: fconst_0
+      78: invokestatic  #175                // Method net/minecraft/util/Mth.rotateIfNecessary:(FFF)F
+      81: invokevirtual #179                // Method net/minecraft/world/entity/Mob.setYRot:(F)V
+      84: iconst_1
+      85: ireturn
+      86: iconst_0
+      87: ireturn
+}

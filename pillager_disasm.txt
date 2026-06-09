@@ -1,0 +1,520 @@
+﻿Compiled from "Pillager.java"
+public class net.minecraft.world.entity.monster.Pillager extends net.minecraft.world.entity.monster.AbstractIllager implements net.minecraft.world.entity.monster.CrossbowAttackMob,net.minecraft.world.entity.npc.InventoryCarrier {
+  public net.minecraft.world.entity.monster.Pillager(net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.monster.Pillager>, net.minecraft.world.level.Level);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: invokespecial #42                 // Method net/minecraft/world/entity/monster/AbstractIllager."<init>":(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V
+       6: aload_0
+       7: new           #44                 // class net/minecraft/world/SimpleContainer
+      10: dup
+      11: iconst_5
+      12: invokespecial #47                 // Method net/minecraft/world/SimpleContainer."<init>":(I)V
+      15: putfield      #49                 // Field inventory:Lnet/minecraft/world/SimpleContainer;
+      18: return
+
+  protected void registerGoals();
+    Code:
+       0: aload_0
+       1: invokespecial #58                 // Method net/minecraft/world/entity/monster/AbstractIllager.registerGoals:()V
+       4: aload_0
+       5: getfield      #62                 // Field goalSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+       8: iconst_0
+       9: new           #64                 // class net/minecraft/world/entity/ai/goal/FloatGoal
+      12: dup
+      13: aload_0
+      14: invokespecial #67                 // Method net/minecraft/world/entity/ai/goal/FloatGoal."<init>":(Lnet/minecraft/world/entity/Mob;)V
+      17: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+      20: aload_0
+      21: getfield      #62                 // Field goalSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+      24: iconst_2
+      25: new           #11                 // class net/minecraft/world/entity/raid/Raider$HoldGroundAttackGoal
+      28: dup
+      29: aload_0
+      30: aload_0
+      31: ldc           #74                 // float 10.0f
+      33: invokespecial #77                 // Method net/minecraft/world/entity/raid/Raider$HoldGroundAttackGoal."<init>":(Lnet/minecraft/world/entity/raid/Raider;Lnet/minecraft/world/entity/monster/AbstractIllager;F)V
+      36: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+      39: aload_0
+      40: getfield      #62                 // Field goalSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+      43: iconst_3
+      44: new           #79                 // class net/minecraft/world/entity/ai/goal/RangedCrossbowAttackGoal
+      47: dup
+      48: aload_0
+      49: dconst_1
+      50: ldc           #80                 // float 8.0f
+      52: invokespecial #83                 // Method net/minecraft/world/entity/ai/goal/RangedCrossbowAttackGoal."<init>":(Lnet/minecraft/world/entity/monster/Monster;DF)V
+      55: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+      58: aload_0
+      59: getfield      #62                 // Field goalSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+      62: bipush        8
+      64: new           #85                 // class net/minecraft/world/entity/ai/goal/RandomStrollGoal
+      67: dup
+      68: aload_0
+      69: ldc2_w        #86                 // double 0.6d
+      72: invokespecial #90                 // Method net/minecraft/world/entity/ai/goal/RandomStrollGoal."<init>":(Lnet/minecraft/world/entity/PathfinderMob;D)V
+      75: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+      78: aload_0
+      79: getfield      #62                 // Field goalSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+      82: bipush        9
+      84: new           #92                 // class net/minecraft/world/entity/ai/goal/LookAtPlayerGoal
+      87: dup
+      88: aload_0
+      89: ldc           #94                 // class net/minecraft/world/entity/player/Player
+      91: ldc           #95                 // float 15.0f
+      93: fconst_1
+      94: invokespecial #98                 // Method net/minecraft/world/entity/ai/goal/LookAtPlayerGoal."<init>":(Lnet/minecraft/world/entity/Mob;Ljava/lang/Class;FF)V
+      97: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+     100: aload_0
+     101: getfield      #62                 // Field goalSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+     104: bipush        10
+     106: new           #92                 // class net/minecraft/world/entity/ai/goal/LookAtPlayerGoal
+     109: dup
+     110: aload_0
+     111: ldc           #100                // class net/minecraft/world/entity/Mob
+     113: ldc           #95                 // float 15.0f
+     115: invokespecial #103                // Method net/minecraft/world/entity/ai/goal/LookAtPlayerGoal."<init>":(Lnet/minecraft/world/entity/Mob;Ljava/lang/Class;F)V
+     118: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+     121: aload_0
+     122: getfield      #106                // Field targetSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+     125: iconst_1
+     126: new           #108                // class net/minecraft/world/entity/ai/goal/target/HurtByTargetGoal
+     129: dup
+     130: aload_0
+     131: iconst_1
+     132: anewarray     #110                // class java/lang/Class
+     135: dup
+     136: iconst_0
+     137: ldc           #13                 // class net/minecraft/world/entity/raid/Raider
+     139: aastore
+     140: invokespecial #113                // Method net/minecraft/world/entity/ai/goal/target/HurtByTargetGoal."<init>":(Lnet/minecraft/world/entity/PathfinderMob;[Ljava/lang/Class;)V
+     143: iconst_0
+     144: anewarray     #110                // class java/lang/Class
+     147: invokevirtual #117                // Method net/minecraft/world/entity/ai/goal/target/HurtByTargetGoal.setAlertOthers:([Ljava/lang/Class;)Lnet/minecraft/world/entity/ai/goal/target/HurtByTargetGoal;
+     150: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+     153: aload_0
+     154: getfield      #106                // Field targetSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+     157: iconst_2
+     158: new           #119                // class net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal
+     161: dup
+     162: aload_0
+     163: ldc           #94                 // class net/minecraft/world/entity/player/Player
+     165: iconst_1
+     166: invokespecial #122                // Method net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal."<init>":(Lnet/minecraft/world/entity/Mob;Ljava/lang/Class;Z)V
+     169: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+     172: aload_0
+     173: getfield      #106                // Field targetSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+     176: iconst_3
+     177: new           #119                // class net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal
+     180: dup
+     181: aload_0
+     182: ldc           #124                // class net/minecraft/world/entity/npc/AbstractVillager
+     184: iconst_0
+     185: invokespecial #122                // Method net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal."<init>":(Lnet/minecraft/world/entity/Mob;Ljava/lang/Class;Z)V
+     188: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+     191: aload_0
+     192: getfield      #106                // Field targetSelector:Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+     195: iconst_3
+     196: new           #119                // class net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal
+     199: dup
+     200: aload_0
+     201: ldc           #126                // class net/minecraft/world/entity/animal/IronGolem
+     203: iconst_1
+     204: invokespecial #122                // Method net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal."<init>":(Lnet/minecraft/world/entity/Mob;Ljava/lang/Class;Z)V
+     207: invokevirtual #73                 // Method net/minecraft/world/entity/ai/goal/GoalSelector.addGoal:(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+     210: return
+
+  public static net.minecraft.world.entity.ai.attributes.AttributeSupplier$Builder createAttributes();
+    Code:
+       0: invokestatic  #133                // Method net/minecraft/world/entity/monster/Monster.createMonsterAttributes:()Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;
+       3: getstatic     #139                // Field net/minecraft/world/entity/ai/attributes/Attributes.MOVEMENT_SPEED:Lnet/minecraft/world/entity/ai/attributes/Attribute;
+       6: ldc2_w        #140                // double 0.3499999940395355d
+       9: invokevirtual #145                // Method net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder.add:(Lnet/minecraft/world/entity/ai/attributes/Attribute;D)Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;
+      12: getstatic     #148                // Field net/minecraft/world/entity/ai/attributes/Attributes.MAX_HEALTH:Lnet/minecraft/world/entity/ai/attributes/Attribute;
+      15: ldc2_w        #149                // double 24.0d
+      18: invokevirtual #145                // Method net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder.add:(Lnet/minecraft/world/entity/ai/attributes/Attribute;D)Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;
+      21: getstatic     #153                // Field net/minecraft/world/entity/ai/attributes/Attributes.ATTACK_DAMAGE:Lnet/minecraft/world/entity/ai/attributes/Attribute;
+      24: ldc2_w        #154                // double 5.0d
+      27: invokevirtual #145                // Method net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder.add:(Lnet/minecraft/world/entity/ai/attributes/Attribute;D)Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;
+      30: getstatic     #158                // Field net/minecraft/world/entity/ai/attributes/Attributes.FOLLOW_RANGE:Lnet/minecraft/world/entity/ai/attributes/Attribute;
+      33: ldc2_w        #159                // double 32.0d
+      36: invokevirtual #145                // Method net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder.add:(Lnet/minecraft/world/entity/ai/attributes/Attribute;D)Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;
+      39: areturn
+
+  protected void defineSynchedData();
+    Code:
+       0: aload_0
+       1: invokespecial #163                // Method net/minecraft/world/entity/monster/AbstractIllager.defineSynchedData:()V
+       4: aload_0
+       5: getfield      #167                // Field entityData:Lnet/minecraft/network/syncher/SynchedEntityData;
+       8: getstatic     #169                // Field IS_CHARGING_CROSSBOW:Lnet/minecraft/network/syncher/EntityDataAccessor;
+      11: iconst_0
+      12: invokestatic  #175                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+      15: invokevirtual #181                // Method net/minecraft/network/syncher/SynchedEntityData.define:(Lnet/minecraft/network/syncher/EntityDataAccessor;Ljava/lang/Object;)V
+      18: return
+
+  public boolean canFireProjectileWeapon(net.minecraft.world.item.ProjectileWeaponItem);
+    Code:
+       0: aload_1
+       1: getstatic     #190                // Field net/minecraft/world/item/Items.CROSSBOW:Lnet/minecraft/world/item/Item;
+       4: if_acmpne     11
+       7: iconst_1
+       8: goto          12
+      11: iconst_0
+      12: ireturn
+
+  public boolean isChargingCrossbow();
+    Code:
+       0: aload_0
+       1: getfield      #167                // Field entityData:Lnet/minecraft/network/syncher/SynchedEntityData;
+       4: getstatic     #169                // Field IS_CHARGING_CROSSBOW:Lnet/minecraft/network/syncher/EntityDataAccessor;
+       7: invokevirtual #197                // Method net/minecraft/network/syncher/SynchedEntityData.get:(Lnet/minecraft/network/syncher/EntityDataAccessor;)Ljava/lang/Object;
+      10: checkcast     #171                // class java/lang/Boolean
+      13: invokevirtual #200                // Method java/lang/Boolean.booleanValue:()Z
+      16: ireturn
+
+  public void setChargingCrossbow(boolean);
+    Code:
+       0: aload_0
+       1: getfield      #167                // Field entityData:Lnet/minecraft/network/syncher/SynchedEntityData;
+       4: getstatic     #169                // Field IS_CHARGING_CROSSBOW:Lnet/minecraft/network/syncher/EntityDataAccessor;
+       7: iload_1
+       8: invokestatic  #175                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+      11: invokevirtual #206                // Method net/minecraft/network/syncher/SynchedEntityData.set:(Lnet/minecraft/network/syncher/EntityDataAccessor;Ljava/lang/Object;)V
+      14: return
+
+  public void onCrossbowAttackPerformed();
+    Code:
+       0: aload_0
+       1: iconst_0
+       2: putfield      #211                // Field noActionTime:I
+       5: return
+
+  public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #216                // Method net/minecraft/world/entity/monster/AbstractIllager.addAdditionalSaveData:(Lnet/minecraft/nbt/CompoundTag;)V
+       5: aload_0
+       6: aload_1
+       7: invokevirtual #219                // Method writeInventoryToTag:(Lnet/minecraft/nbt/CompoundTag;)V
+      10: return
+
+  public net.minecraft.world.entity.monster.AbstractIllager$IllagerArmPose getArmPose();
+    Code:
+       0: aload_0
+       1: invokevirtual #224                // Method isChargingCrossbow:()Z
+       4: ifeq          11
+       7: getstatic     #228                // Field net/minecraft/world/entity/monster/AbstractIllager$IllagerArmPose.CROSSBOW_CHARGE:Lnet/minecraft/world/entity/monster/AbstractIllager$IllagerArmPose;
+      10: areturn
+      11: aload_0
+      12: getstatic     #190                // Field net/minecraft/world/item/Items.CROSSBOW:Lnet/minecraft/world/item/Item;
+      15: invokevirtual #232                // Method isHolding:(Lnet/minecraft/world/item/Item;)Z
+      18: ifeq          25
+      21: getstatic     #235                // Field net/minecraft/world/entity/monster/AbstractIllager$IllagerArmPose.CROSSBOW_HOLD:Lnet/minecraft/world/entity/monster/AbstractIllager$IllagerArmPose;
+      24: areturn
+      25: aload_0
+      26: invokevirtual #238                // Method isAggressive:()Z
+      29: ifeq          36
+      32: getstatic     #241                // Field net/minecraft/world/entity/monster/AbstractIllager$IllagerArmPose.ATTACKING:Lnet/minecraft/world/entity/monster/AbstractIllager$IllagerArmPose;
+      35: areturn
+      36: getstatic     #244                // Field net/minecraft/world/entity/monster/AbstractIllager$IllagerArmPose.NEUTRAL:Lnet/minecraft/world/entity/monster/AbstractIllager$IllagerArmPose;
+      39: areturn
+
+  public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #247                // Method net/minecraft/world/entity/monster/AbstractIllager.readAdditionalSaveData:(Lnet/minecraft/nbt/CompoundTag;)V
+       5: aload_0
+       6: aload_1
+       7: invokevirtual #250                // Method readInventoryFromTag:(Lnet/minecraft/nbt/CompoundTag;)V
+      10: aload_0
+      11: iconst_1
+      12: invokevirtual #253                // Method setCanPickUpLoot:(Z)V
+      15: return
+
+  public float getWalkTargetValue(net.minecraft.core.BlockPos, net.minecraft.world.level.LevelReader);
+    Code:
+       0: fconst_0
+       1: freturn
+
+  public int getMaxSpawnClusterSize();
+    Code:
+       0: iconst_1
+       1: ireturn
+
+  public net.minecraft.world.entity.SpawnGroupData finalizeSpawn(net.minecraft.world.level.ServerLevelAccessor, net.minecraft.world.DifficultyInstance, net.minecraft.world.entity.MobSpawnType, net.minecraft.world.entity.SpawnGroupData, net.minecraft.nbt.CompoundTag);
+    Code:
+       0: aload_1
+       1: invokeinterface #274,  1          // InterfaceMethod net/minecraft/world/level/ServerLevelAccessor.getRandom:()Lnet/minecraft/util/RandomSource;
+       6: astore        6
+       8: aload_0
+       9: aload         6
+      11: aload_2
+      12: invokevirtual #278                // Method populateDefaultEquipmentSlots:(Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/DifficultyInstance;)V
+      15: aload_0
+      16: aload         6
+      18: aload_2
+      19: invokevirtual #281                // Method populateDefaultEquipmentEnchantments:(Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/DifficultyInstance;)V
+      22: aload_0
+      23: aload_1
+      24: aload_2
+      25: aload_3
+      26: aload         4
+      28: aload         5
+      30: invokespecial #283                // Method net/minecraft/world/entity/monster/AbstractIllager.finalizeSpawn:(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/entity/SpawnGroupData;
+      33: areturn
+
+  protected void populateDefaultEquipmentSlots(net.minecraft.util.RandomSource, net.minecraft.world.DifficultyInstance);
+    Code:
+       0: aload_0
+       1: getstatic     #295                // Field net/minecraft/world/entity/EquipmentSlot.MAINHAND:Lnet/minecraft/world/entity/EquipmentSlot;
+       4: new           #297                // class net/minecraft/world/item/ItemStack
+       7: dup
+       8: getstatic     #190                // Field net/minecraft/world/item/Items.CROSSBOW:Lnet/minecraft/world/item/Item;
+      11: invokespecial #300                // Method net/minecraft/world/item/ItemStack."<init>":(Lnet/minecraft/world/level/ItemLike;)V
+      14: invokevirtual #304                // Method setItemSlot:(Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/item/ItemStack;)V
+      17: return
+
+  protected void enchantSpawnedWeapon(net.minecraft.util.RandomSource, float);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: fload_2
+       3: invokespecial #309                // Method net/minecraft/world/entity/monster/AbstractIllager.enchantSpawnedWeapon:(Lnet/minecraft/util/RandomSource;F)V
+       6: aload_1
+       7: sipush        300
+      10: invokeinterface #315,  2          // InterfaceMethod net/minecraft/util/RandomSource.nextInt:(I)I
+      15: ifne          68
+      18: aload_0
+      19: invokevirtual #319                // Method getMainHandItem:()Lnet/minecraft/world/item/ItemStack;
+      22: astore_3
+      23: aload_3
+      24: getstatic     #190                // Field net/minecraft/world/item/Items.CROSSBOW:Lnet/minecraft/world/item/Item;
+      27: invokevirtual #322                // Method net/minecraft/world/item/ItemStack.is:(Lnet/minecraft/world/item/Item;)Z
+      30: ifeq          68
+      33: aload_3
+      34: invokestatic  #328                // Method net/minecraft/world/item/enchantment/EnchantmentHelper.getEnchantments:(Lnet/minecraft/world/item/ItemStack;)Ljava/util/Map;
+      37: astore        4
+      39: aload         4
+      41: getstatic     #334                // Field net/minecraft/world/item/enchantment/Enchantments.PIERCING:Lnet/minecraft/world/item/enchantment/Enchantment;
+      44: iconst_1
+      45: invokestatic  #339                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      48: invokeinterface #345,  3          // InterfaceMethod java/util/Map.putIfAbsent:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      53: pop
+      54: aload         4
+      56: aload_3
+      57: invokestatic  #349                // Method net/minecraft/world/item/enchantment/EnchantmentHelper.setEnchantments:(Ljava/util/Map;Lnet/minecraft/world/item/ItemStack;)V
+      60: aload_0
+      61: getstatic     #295                // Field net/minecraft/world/entity/EquipmentSlot.MAINHAND:Lnet/minecraft/world/entity/EquipmentSlot;
+      64: aload_3
+      65: invokevirtual #304                // Method setItemSlot:(Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/item/ItemStack;)V
+      68: return
+
+  public boolean isAlliedTo(net.minecraft.world.entity.Entity);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #359                // Method net/minecraft/world/entity/monster/AbstractIllager.isAlliedTo:(Lnet/minecraft/world/entity/Entity;)Z
+       5: ifeq          10
+       8: iconst_1
+       9: ireturn
+      10: aload_1
+      11: instanceof    #361                // class net/minecraft/world/entity/LivingEntity
+      14: ifeq          50
+      17: aload_1
+      18: checkcast     #361                // class net/minecraft/world/entity/LivingEntity
+      21: invokevirtual #365                // Method net/minecraft/world/entity/LivingEntity.getMobType:()Lnet/minecraft/world/entity/MobType;
+      24: getstatic     #371                // Field net/minecraft/world/entity/MobType.ILLAGER:Lnet/minecraft/world/entity/MobType;
+      27: if_acmpne     50
+      30: aload_0
+      31: invokevirtual #375                // Method getTeam:()Lnet/minecraft/world/scores/Team;
+      34: ifnonnull     48
+      37: aload_1
+      38: invokevirtual #378                // Method net/minecraft/world/entity/Entity.getTeam:()Lnet/minecraft/world/scores/Team;
+      41: ifnonnull     48
+      44: iconst_1
+      45: goto          49
+      48: iconst_0
+      49: ireturn
+      50: iconst_0
+      51: ireturn
+
+  protected net.minecraft.sounds.SoundEvent getAmbientSound();
+    Code:
+       0: getstatic     #387                // Field net/minecraft/sounds/SoundEvents.PILLAGER_AMBIENT:Lnet/minecraft/sounds/SoundEvent;
+       3: areturn
+
+  protected net.minecraft.sounds.SoundEvent getDeathSound();
+    Code:
+       0: getstatic     #391                // Field net/minecraft/sounds/SoundEvents.PILLAGER_DEATH:Lnet/minecraft/sounds/SoundEvent;
+       3: areturn
+
+  protected net.minecraft.sounds.SoundEvent getHurtSound(net.minecraft.world.damagesource.DamageSource);
+    Code:
+       0: getstatic     #397                // Field net/minecraft/sounds/SoundEvents.PILLAGER_HURT:Lnet/minecraft/sounds/SoundEvent;
+       3: areturn
+
+  public void performRangedAttack(net.minecraft.world.entity.LivingEntity, float);
+    Code:
+       0: aload_0
+       1: aload_0
+       2: ldc           #33                 // float 1.6f
+       4: invokevirtual #404                // Method performCrossbowAttack:(Lnet/minecraft/world/entity/LivingEntity;F)V
+       7: return
+
+  public void shootCrossbowProjectile(net.minecraft.world.entity.LivingEntity, net.minecraft.world.item.ItemStack, net.minecraft.world.entity.projectile.Projectile, float);
+    Code:
+       0: aload_0
+       1: aload_0
+       2: aload_1
+       3: aload_3
+       4: fload         4
+       6: ldc           #33                 // float 1.6f
+       8: invokevirtual #411                // Method shootCrossbowProjectile:(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/projectile/Projectile;FF)V
+      11: return
+
+  public net.minecraft.world.SimpleContainer getInventory();
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field inventory:Lnet/minecraft/world/SimpleContainer;
+       4: areturn
+
+  protected void pickUpItem(net.minecraft.world.entity.item.ItemEntity);
+    Code:
+       0: aload_1
+       1: invokevirtual #422                // Method net/minecraft/world/entity/item/ItemEntity.getItem:()Lnet/minecraft/world/item/ItemStack;
+       4: astore_2
+       5: aload_2
+       6: invokevirtual #425                // Method net/minecraft/world/item/ItemStack.getItem:()Lnet/minecraft/world/item/Item;
+       9: instanceof    #427                // class net/minecraft/world/item/BannerItem
+      12: ifeq          23
+      15: aload_0
+      16: aload_1
+      17: invokespecial #429                // Method net/minecraft/world/entity/monster/AbstractIllager.pickUpItem:(Lnet/minecraft/world/entity/item/ItemEntity;)V
+      20: goto          67
+      23: aload_0
+      24: aload_2
+      25: invokevirtual #433                // Method wantsItem:(Lnet/minecraft/world/item/ItemStack;)Z
+      28: ifeq          67
+      31: aload_0
+      32: aload_1
+      33: invokevirtual #436                // Method onItemPickup:(Lnet/minecraft/world/entity/item/ItemEntity;)V
+      36: aload_0
+      37: getfield      #49                 // Field inventory:Lnet/minecraft/world/SimpleContainer;
+      40: aload_2
+      41: invokevirtual #440                // Method net/minecraft/world/SimpleContainer.addItem:(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;
+      44: astore_3
+      45: aload_3
+      46: invokevirtual #443                // Method net/minecraft/world/item/ItemStack.isEmpty:()Z
+      49: ifeq          59
+      52: aload_1
+      53: invokevirtual #446                // Method net/minecraft/world/entity/item/ItemEntity.discard:()V
+      56: goto          67
+      59: aload_2
+      60: aload_3
+      61: invokevirtual #449                // Method net/minecraft/world/item/ItemStack.getCount:()I
+      64: invokevirtual #452                // Method net/minecraft/world/item/ItemStack.setCount:(I)V
+      67: return
+
+  public net.minecraft.world.entity.SlotAccess getSlot(int);
+    Code:
+       0: iload_1
+       1: sipush        300
+       4: isub
+       5: istore_2
+       6: iload_2
+       7: iflt          30
+      10: iload_2
+      11: aload_0
+      12: getfield      #49                 // Field inventory:Lnet/minecraft/world/SimpleContainer;
+      15: invokevirtual #466                // Method net/minecraft/world/SimpleContainer.getContainerSize:()I
+      18: if_icmpge     30
+      21: aload_0
+      22: getfield      #49                 // Field inventory:Lnet/minecraft/world/SimpleContainer;
+      25: iload_2
+      26: invokestatic  #472                // InterfaceMethod net/minecraft/world/entity/SlotAccess.forContainer:(Lnet/minecraft/world/Container;I)Lnet/minecraft/world/entity/SlotAccess;
+      29: areturn
+      30: aload_0
+      31: iload_1
+      32: invokespecial #474                // Method net/minecraft/world/entity/monster/AbstractIllager.getSlot:(I)Lnet/minecraft/world/entity/SlotAccess;
+      35: areturn
+
+  public void applyRaidBuffs(int, boolean);
+    Code:
+       0: aload_0
+       1: invokevirtual #481                // Method getCurrentRaid:()Lnet/minecraft/world/entity/raid/Raid;
+       4: astore_3
+       5: aload_0
+       6: getfield      #484                // Field random:Lnet/minecraft/util/RandomSource;
+       9: invokeinterface #488,  1          // InterfaceMethod net/minecraft/util/RandomSource.nextFloat:()F
+      14: aload_3
+      15: invokevirtual #493                // Method net/minecraft/world/entity/raid/Raid.getEnchantOdds:()F
+      18: fcmpg
+      19: ifgt          26
+      22: iconst_1
+      23: goto          27
+      26: iconst_0
+      27: istore        4
+      29: iload         4
+      31: ifeq          137
+      34: new           #297                // class net/minecraft/world/item/ItemStack
+      37: dup
+      38: getstatic     #190                // Field net/minecraft/world/item/Items.CROSSBOW:Lnet/minecraft/world/item/Item;
+      41: invokespecial #300                // Method net/minecraft/world/item/ItemStack."<init>":(Lnet/minecraft/world/level/ItemLike;)V
+      44: astore        5
+      46: invokestatic  #499                // Method com/google/common/collect/Maps.newHashMap:()Ljava/util/HashMap;
+      49: astore        6
+      51: iload_1
+      52: aload_3
+      53: getstatic     #505                // Field net/minecraft/world/Difficulty.NORMAL:Lnet/minecraft/world/Difficulty;
+      56: invokevirtual #509                // Method net/minecraft/world/entity/raid/Raid.getNumGroups:(Lnet/minecraft/world/Difficulty;)I
+      59: if_icmple     80
+      62: aload         6
+      64: getstatic     #512                // Field net/minecraft/world/item/enchantment/Enchantments.QUICK_CHARGE:Lnet/minecraft/world/item/enchantment/Enchantment;
+      67: iconst_2
+      68: invokestatic  #339                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      71: invokeinterface #515,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      76: pop
+      77: goto          106
+      80: iload_1
+      81: aload_3
+      82: getstatic     #520                // Field net/minecraft/world/Difficulty.EASY:Lnet/minecraft/world/Difficulty;
+      85: invokevirtual #509                // Method net/minecraft/world/entity/raid/Raid.getNumGroups:(Lnet/minecraft/world/Difficulty;)I
+      88: if_icmple     106
+      91: aload         6
+      93: getstatic     #512                // Field net/minecraft/world/item/enchantment/Enchantments.QUICK_CHARGE:Lnet/minecraft/world/item/enchantment/Enchantment;
+      96: iconst_1
+      97: invokestatic  #339                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     100: invokeinterface #515,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     105: pop
+     106: aload         6
+     108: getstatic     #523                // Field net/minecraft/world/item/enchantment/Enchantments.MULTISHOT:Lnet/minecraft/world/item/enchantment/Enchantment;
+     111: iconst_1
+     112: invokestatic  #339                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     115: invokeinterface #515,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     120: pop
+     121: aload         6
+     123: aload         5
+     125: invokestatic  #349                // Method net/minecraft/world/item/enchantment/EnchantmentHelper.setEnchantments:(Ljava/util/Map;Lnet/minecraft/world/item/ItemStack;)V
+     128: aload_0
+     129: getstatic     #295                // Field net/minecraft/world/entity/EquipmentSlot.MAINHAND:Lnet/minecraft/world/entity/EquipmentSlot;
+     132: aload         5
+     134: invokevirtual #304                // Method setItemSlot:(Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/item/ItemStack;)V
+     137: return
+
+  public net.minecraft.sounds.SoundEvent getCelebrateSound();
+    Code:
+       0: getstatic     #530                // Field net/minecraft/sounds/SoundEvents.PILLAGER_CELEBRATE:Lnet/minecraft/sounds/SoundEvent;
+       3: areturn
+
+  static {};
+    Code:
+       0: ldc           #2                  // class net/minecraft/world/entity/monster/Pillager
+       2: getstatic     #537                // Field net/minecraft/network/syncher/EntityDataSerializers.BOOLEAN:Lnet/minecraft/network/syncher/EntityDataSerializer;
+       5: invokestatic  #541                // Method net/minecraft/network/syncher/SynchedEntityData.defineId:(Ljava/lang/Class;Lnet/minecraft/network/syncher/EntityDataSerializer;)Lnet/minecraft/network/syncher/EntityDataAccessor;
+       8: putstatic     #169                // Field IS_CHARGING_CROSSBOW:Lnet/minecraft/network/syncher/EntityDataAccessor;
+      11: return
+}
