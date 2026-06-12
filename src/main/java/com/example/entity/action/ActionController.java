@@ -85,6 +85,16 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             this.lastPlayerPos = null;
         }
 
+        // --- デバッグ用強制発動 ---
+        if (owner.forcedDebugAction != ActionType.NONE) {
+            this.currentAction = owner.forcedDebugAction;
+            owner.forcedDebugAction = ActionType.NONE;
+            owner.hasBeenSeenSinceWarp = false;
+            owner.isActionActive = false;
+            owner.isWaitingForWarp = true; // アクションを発動可能な状態にする
+            return true;
+        }
+
         if (owner.hasBeenSeenSinceWarp) {
             long elapsed = level.getGameTime() - owner.timeWhenSeen;
             
@@ -178,22 +188,22 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     // ==========================================
                     
                     // 【新規】壁を掘り破ってくる恐ろしい強襲アクション（洞窟限定）
-                    // 確率: 5% / ティック (テスト用)
-                    if (isUnderground && Math.random() < 0.05 * multiplier) {
+                    // 確率: 約1000秒(16分)に1回程度 (0.00005)
+                    if (isUnderground && Math.random() < 0.00005 * multiplier) {
                         this.currentAction = ActionType.CAVE_AMBUSH;
                         return true;
                     }
                     
                     // 【新規】透明で近づき足音だけ残して去り、遠くで見つめるアクション（洞窟・ネザー限定）
-                    // 確率: 5% / ティック (テスト用)
-                    if (Math.random() < 0.05 * multiplier) {
+                    // 確率: 約250秒(4分)に1回程度 (0.0002)
+                    if (Math.random() < 0.0002 * multiplier) {
                         this.currentAction = ActionType.WALK_AWAY;
                         return true;
                     }
 
                     // 洞窟（地下）限定のポルターガイストアクション
-                    // 確率: 10% / ティック (テスト用)
-                    if (isUnderground && Math.random() < 0.1 * multiplier) {
+                    // 確率: 約100秒(1.6分)に1回程度 (0.0005)
+                    if (isUnderground && Math.random() < 0.0005 * multiplier) {
                         this.currentAction = ActionType.UNDERGROUND;
                         return true;
                     }

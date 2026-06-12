@@ -24,11 +24,13 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.sounds.SoundEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import com.example.command.HorrorDebugCommand;
+import com.example.item.HorrorDebugItem;
 
 public class TemplateMod implements ModInitializer {
 	public static final String MOD_ID = "template-mod";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
 
 	// Register Horror Steve Entity
 	public static final EntityType<com.example.entity.HorrorSteveEntity> HORROR_STEVE = Registry.register(
@@ -46,12 +48,18 @@ public class TemplateMod implements ModInitializer {
 			new SensorType<>(GlobalPlayerSensor::new)
 	);
 
-
 	// Register a Spawn Egg for Horror Steve
 	public static final Item HORROR_STEVE_SPAWN_EGG = Registry.register(
 			BuiltInRegistries.ITEM,
 			new ResourceLocation(MOD_ID, "horror_steve_spawn_egg"),
 			new SpawnEggItem(HORROR_STEVE, 0x00A8FF, 0x000000, new Item.Properties())
+	);
+
+	// Register Debug Wand
+	public static final Item HORROR_DEBUG_WAND = Registry.register(
+			BuiltInRegistries.ITEM,
+			new ResourceLocation(MOD_ID, "horror_debug_wand"),
+			new HorrorDebugItem(new Item.Properties().stacksTo(1))
 	);
 
 	// Register Custom Sound (for future custom audio files)
@@ -71,10 +79,15 @@ public class TemplateMod implements ModInitializer {
 		// Register Entity attributes
 		FabricDefaultAttributeRegistry.register(HORROR_STEVE, com.example.entity.HorrorSteveEntity.createAttributes());
 
-
-		// Add Spawn Egg to the Creative Mode Spawn Eggs tab
+		// Add Items to the Creative Mode Spawn Eggs tab
 		ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(content -> {
 			content.accept(HORROR_STEVE_SPAWN_EGG);
+			content.accept(HORROR_DEBUG_WAND);
+		});
+
+		// Register Commands
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			HorrorDebugCommand.register(dispatcher);
 		});
 	}
 }

@@ -101,7 +101,7 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
                 // プレイヤーに10秒間の暗闇効果を付与
                 this.targetPlayer.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 200, 0, false, false));
                 // クリーパーの起爆音などを鳴らして突撃の合図
-                level.playSound(null, owner.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 1.0f, 1.5f);
+                // level.playSound(null, owner.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 1.0f, 1.5f);
                 return;
             }
             
@@ -135,13 +135,6 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
                 
                 // スティーブを前進させる
                 owner.teleportTo(nextPos.getX() + 0.5, nextPos.getY(), nextPos.getZ() + 0.5);
-                
-                // 万が一プレイヤーに到達してしまったら（壁越しに密着）チャージへ
-                if (owner.distanceToSqr(this.targetPlayer) < 9.0) {
-                    this.phase = 2;
-                    owner.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 9, false, false));
-                    this.targetPlayer.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 200, 0, false, false));
-                }
             }
             
         } else if (this.phase == 2) { // 突撃フェーズ

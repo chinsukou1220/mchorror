@@ -74,7 +74,13 @@ public class UndergroundAction extends Behavior<HorrorSteveEntity> {
                     availableActions.add(4); // Torches to Redstone Torches
                 }
 
-                this.actionPhase = availableActions.get(level.random.nextInt(availableActions.size()));
+                // --- デバッグ用フェーズ強制 ---
+                if (owner.forcedUndergroundPhase != 0) {
+                    this.actionPhase = owner.forcedUndergroundPhase;
+                    owner.forcedUndergroundPhase = 0;
+                } else {
+                    this.actionPhase = availableActions.get(level.random.nextInt(availableActions.size()));
+                }
             } else {
                 owner.isActionActive = false;
             }

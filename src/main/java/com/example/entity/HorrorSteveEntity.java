@@ -24,6 +24,10 @@ public class HorrorSteveEntity extends PathfinderMob {
     public int chargeTicks = 0; // 突進にかかっている時間（スタック時のタイムアウト用）
     public boolean isWaitingForWarp = false; // ランダムワープ（次の出番）を待機している状態
 
+    // --- デバッグ＆拡張用変数 ---
+    public com.example.entity.action.ActionController.ActionType forcedDebugAction = com.example.entity.action.ActionController.ActionType.NONE;
+    public int forcedUndergroundPhase = 0; // 0の場合はランダム
+
     public HorrorSteveEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
     }

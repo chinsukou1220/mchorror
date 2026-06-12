@@ -142,6 +142,13 @@ public class HorrorSteveAi {
                 if (optionalPlayers.isPresent() && !optionalPlayers.get().isEmpty()) {
                     Player target = optionalPlayers.get().get(0);
                     
+                    // カスタム強襲アクション（CAVE_AMBUSH等）が進行中の場合は、共通AIの視線・逃走判定をスキップする
+                    if (owner.isActionActive && owner.isAggressiveStalking) {
+                        owner.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new net.minecraft.world.entity.ai.behavior.EntityTracker(target, true));
+                        owner.getLookControl().setLookAt(target, 45.0F, 90.0F);
+                        return;
+                    }
+                    
                     // --- 突進攻撃モードの処理 ---
                     if (owner.isChargingToAttack) {
                         owner.chargeTicks++;
@@ -216,8 +223,8 @@ public class HorrorSteveAi {
                                             owner.isChargingToAttack = true;
                                             owner.chargeTicks = 0;
                                             owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-                                            // 突っ込んでくるときの共通現象として暗闇を付与
-                                            target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 200, 0, false, false));
+                                            // 突っ込んでくるときの共通現象として暗闇を付与（3秒間に変更）
+                                            target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 60, 0, false, false));
                                         } else {
                                             owner.hasBeenSeenSinceWarp = true;
                                             owner.timeWhenSeen = level.getGameTime(); // 通常の逃走開始時間を記録
