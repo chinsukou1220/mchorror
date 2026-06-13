@@ -31,36 +31,34 @@ public class SoundAction extends Behavior<HorrorSteveEntity> {
         return true;
     }
 
+    /**
+     * プレイヤー周辺で不気味な音を鳴らす（HuntAction等から直接呼び出し可能）。
+     */
+    public static void playCreepySound(ServerLevel level, Player target) {
+        Random rng = new Random();
+        SoundEvent[] sounds = {
+            SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR,
+            SoundEvents.CREEPER_PRIMED,
+            SoundEvents.ENDERMAN_STARE,
+            SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH,
+            SoundEvents.STONE_STEP,
+            TemplateMod.CREEPY_SOUND_1
+        };
+        SoundEvent selectedSound = sounds[rng.nextInt(sounds.length)];
+        double angle = rng.nextDouble() * Math.PI * 2;
+        double distance = 3.0 + rng.nextDouble() * 5.0;
+        double x = target.getX() + Math.cos(angle) * distance;
+        double y = target.getY() + 1.0;
+        double z = target.getZ() + Math.sin(angle) * distance;
+        level.playSound(null, x, y, z, selectedSound, SoundSource.HOSTILE, 1.0f, 1.0f);
+    }
+
     @Override
     protected void start(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
         Optional<List<Player>> players = owner.getBrain().getMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.NEAREST_PLAYERS);
         if (players.isPresent() && !players.get().isEmpty()) {
-            Player target = players.get().get(0);
-            
-            // 鳴らす音の候補リスト
-            SoundEvent[] sounds = {
-                SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, // ドアを叩く音
-                SoundEvents.CREEPER_PRIMED, // クリーパーのシュー音
-                SoundEvents.ENDERMAN_STARE, // エンダーマンの叫び声
-                SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH, // ガサガサ音（足音の代わり）
-                SoundEvents.STONE_STEP, // コツッという足音
-                TemplateMod.CREEPY_SOUND_1 // 将来のカスタムサウンド用
-            };
-            
-            SoundEvent selectedSound = sounds[random.nextInt(sounds.length)];
-            
-            // プレイヤーから3〜8ブロック離れたランダムな方向で鳴らす
-            double angle = random.nextDouble() * Math.PI * 2;
-            double distance = 3.0 + random.nextDouble() * 5.0; 
-            double x = target.getX() + Math.cos(angle) * distance;
-            double y = target.getY() + 1.0;
-            double z = target.getZ() + Math.sin(angle) * distance;
-            
-            // プレイヤーに音を聞かせる
-            level.playSound(null, x, y, z, selectedSound, SoundSource.HOSTILE, 1.0f, 1.0f);
+            playCreepySound(level, players.get().get(0));
         }
-        
-        // アクションを即座に終了し、クールダウンを開始する
         owner.isActionActive = false;
         owner.lastWarpTime = level.getGameTime();
     }

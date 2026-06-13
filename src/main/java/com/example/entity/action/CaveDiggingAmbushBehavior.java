@@ -28,7 +28,7 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
     private Player targetPlayer = null;
 
     public CaveDiggingAmbushBehavior() {
-        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT));
+        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 500, 500);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
             this.digTimer++;
             this.phase1Timer++;
             
-            // 15秒（300ティック）経っても追いつけず、視線も通らなかった場合は諦めて消滅
+            // 15秒（300ティック）経っても視線が通らなかった場合は諦めて消滅
             if (this.phase1Timer >= 300) {
                 endActionAndVanish(level, owner);
                 return;
@@ -96,12 +96,15 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
             // 視線が通ったらチャージフェーズへ移行
             if (owner.getSensing().hasLineOfSight(this.targetPlayer)) {
                 this.phase = 2;
+                // 段差乗り越え高さを10ブロックに設定（崖も駆け上がれるように）
+                owner.setMaxUpStep(10.0f);
                 // 移動速度上昇レベル10 (アンプリファイア9) を10秒間付与
-                owner.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 9, false, false));
+                owner.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1, false, false));
                 // プレイヤーに10秒間の暗闇効果を付与
                 this.targetPlayer.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 200, 0, false, false));
-                // クリーパーの起爆音などを鳴らして突撃の合図
-                // level.playSound(null, owner.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 1.0f, 1.5f);
+                if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
+                    com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 200, 3.0f);
+                }
                 return;
             }
             
@@ -137,11 +140,20 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
                 owner.teleportTo(nextPos.getX() + 0.5, nextPos.getY(), nextPos.getZ() + 0.5);
             }
             
-        } else if (this.phase == 2) { // 突撃フェーズ
+        } else if (this.phase == 2) { // 突撃フェーズ（ブロックを破壊しながら突進）
             this.chargeTimer++;
             
             // プレイヤーに向かって猛スピードでナビゲーション
-            owner.getNavigation().moveTo(this.targetPlayer, 2.0D); // ベーススピードも2倍
+            owner.getNavigation().moveTo(this.targetPlayer, 2.0D);
+            
+            // 進行方向にあるブロックを毎ティック破壊して道を開ける
+            Vec3 vecToTarget = this.targetPlayer.position().subtract(owner.position()).normalize();
+            int dx = (int) Math.round(vecToTarget.x);
+            int dz = (int) Math.round(vecToTarget.z);
+            BlockPos frontPos = owner.blockPosition().offset(dx, 0, dz);
+            breakBlockIfNotBedrock(level, frontPos);            // 足元（Y+0）
+            breakBlockIfNotBedrock(level, frontPos.above());     // 体（Y+1）
+            breakBlockIfNotBedrock(level, frontPos.above(2));    // 頭上（Y+2）：段差を上る時の天井
             
             // 攻撃判定（距離が2.5未満）
             if (owner.distanceTo(this.targetPlayer) < 2.5) {
@@ -169,9 +181,19 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
     }
 
     private void endActionAndVanish(ServerLevel level, HorrorSteveEntity owner) {
+        // アクション終了時にプレイヤーのエフェクトと揺れを解除する
+        if (this.targetPlayer != null) {
+            this.targetPlayer.removeEffect(MobEffects.DARKNESS);
+            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
+                // 強度と時間を0にして送信し、強制的に揺れをストップさせる
+                com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 0, 0.0f);
+            }
+        }
+
         // 透明化して遠方へワープ
         owner.setInvisible(true);
         owner.isAggressiveStalking = false;
+        owner.setMaxUpStep(0.6f); // 段差乗り越え高さを元に戻す
         
         double ang = level.random.nextDouble() * Math.PI * 2;
         double dist = 80.0 + level.random.nextDouble() * 40.0;
@@ -194,5 +216,6 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
         }
         owner.isActionActive = false;
         owner.isAggressiveStalking = false;
+        owner.setMaxUpStep(0.6f); // 段差乗り越え高さを元に戻す（保険）
     }
 }

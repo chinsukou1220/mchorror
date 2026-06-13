@@ -23,6 +23,11 @@ public class HorrorSteveEntity extends PathfinderMob {
     public boolean isChargingToAttack = false; // 至近距離で見つかった際の突進攻撃モード
     public int chargeTicks = 0; // 突進にかかっている時間（スタック時のタイムアウト用）
     public boolean isWaitingForWarp = false; // ランダムワープ（次の出番）を待機している状態
+    public int invisibleStuckTicks = 0; // 透明状態でのスタック検知用カウンター
+    public net.minecraft.world.phys.Vec3 lastInvisiblePos = net.minecraft.world.phys.Vec3.ZERO; // 前回の座標記録用
+    public long lastBedActionTime = -72000; // ベッドアクションの30分クールダウン管理用
+    public long lastTimerActionTime = -72000; // タイマーアクションの40分クールダウン管理用
+    public long lastHuntActionTime = -72000; // ハントアクションのクールダウン管理用
 
     // --- デバッグ＆拡張用変数 ---
     public com.example.entity.action.ActionController.ActionType forcedDebugAction = com.example.entity.action.ActionController.ActionType.NONE;

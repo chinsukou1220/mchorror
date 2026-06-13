@@ -32,7 +32,13 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         SOUND,
         UNDERGROUND,
         CAVE_AMBUSH,
-        WALK_AWAY
+        WALK_AWAY,
+        BED,
+        KILLING_MOB,
+        TIMER,
+        DROP,
+        HUNT,
+        DUPLICATE
     }
     
     // 呼び出すための具体的なアクションを保持しておく
@@ -47,6 +53,12 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
     private final UndergroundAction undergroundAction = new UndergroundAction();
     private final CaveDiggingAmbushBehavior caveAmbushBehavior = new CaveDiggingAmbushBehavior();
     private final WalkAwayBehavior walkAwayBehavior = new WalkAwayBehavior();
+    private final BedAction bedAction = new BedAction();
+    private final KillingMobAction killingMobAction = new KillingMobAction();
+    private final TimerAction timerAction = new TimerAction();
+    private final DropAction dropAction = new DropAction();
+    private final HuntAction huntAction = new HuntAction();
+    private final DuplicateAction duplicateAction = new DuplicateAction();
     
     // 次に実行するアクションの種類
     private ActionType currentAction = ActionType.NONE;
@@ -57,7 +69,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
 
     public ActionController() {
         // 最低条件：近くにプレイヤーがいる時だけコントローラーが作動する
-        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT));
+        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 600, 600);
     }
 
     @Override
@@ -162,6 +174,37 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                 return false;
             }
             
+            // --- プレイヤーがベッドで寝ている時のアクション ---
+            if (players.isPresent() && !players.get().isEmpty()) {
+                Player target = players.get().get(0);
+                if (target.isSleeping()) {
+                    // 30分（36000ティック）のクールダウン
+                    if (level.getGameTime() - owner.lastBedActionTime > 36000) {
+                        // 寝ている間は毎ティック呼ばれるため、確率を抑える（1%）と約数秒の間にほぼ確実に1回発動する
+                        if (Math.random() < 0.01) {
+                            owner.lastBedActionTime = level.getGameTime();
+                            this.currentAction = ActionType.BED;
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            // --- HuntAction（最優先：体力が減っている時） ---
+            if (players.isPresent() && !players.get().isEmpty()) {
+                Player target = players.get().get(0);
+                float health = target.getHealth();
+                boolean hasPoisonOrWither = target.hasEffect(MobEffects.POISON) || target.hasEffect(MobEffects.WITHER);
+                if (health <= 6.0f || (health <= 8.0f && hasPoisonOrWither)) {
+                    // クールダウン10分（12000ティック）
+                    if (level.getGameTime() - owner.lastHuntActionTime > 12000) {
+                        owner.lastHuntActionTime = level.getGameTime();
+                        this.currentAction = ActionType.HUNT;
+                        return true;
+                    }
+                }
+            }
+            
             // 夜間（日が沈んでいる間）は「背後に回り込む」以外のアクション確率を1.5倍にする
             double multiplier = level.isDay() ? 1.0 : 1.5;
             
@@ -173,6 +216,17 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     return true;
                 }
             }
+            // 全環境共通のフェイクカウントダウン＆強襲アクション
+            // 40分（48000ティック）に1回程度の頻度にするためのクールダウン
+            if (level.getGameTime() - owner.lastTimerActionTime > 48000) {
+                // クールダウンが明けていれば、少しの確率で抽選（約5分に1回当たる確率）
+                if (Math.random() < 0.00015 * multiplier) {
+                    owner.lastTimerActionTime = level.getGameTime();
+                    this.currentAction = ActionType.TIMER;
+                    return true;
+                }
+            }
+            
             // --- 通常のアクション（プレイヤーが動いている時） ---
             else {
                 // プレイヤーの居場所を判定
@@ -219,19 +273,29 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         return true;
                     }
                     
-                    // プレイヤーの置いたブロックを設置するアクション
+                    // プレイヤーの置いたブロックを設置するアクション (0.00005)
                     if (Math.random() < 0.00005 * multiplier) {
                         this.currentAction = ActionType.PLACE;
                         return true;
                     }
                     
-                    // 置いたブロックを全て破壊するアクション
+                    // プレイヤーの建築物（クラスター）を横に複製するアクション (0.00005)
+                    if (Math.random() < 0.00005 * multiplier) {
+                        if (players.isPresent() && !players.get().isEmpty()) {
+                            if (com.example.util.PlayerBlockTracker.hasLargeCluster(players.get().get(0).getUUID(), 30)) {
+                                this.currentAction = ActionType.DUPLICATE;
+                                return true;
+                            }
+                        }
+                    }
+                    
+                    // 置いたブロックを全て破壊するアクション (0.00002)
                     if (Math.random() < 0.00002 * multiplier) {
                         this.currentAction = ActionType.BREAK;
                         return true;
                     }
 
-                    // チェストに対する怪奇現象やイタズラ
+                    // チェストに対する怪奇現象やイタズラ (0.00005)
                     if (Math.random() < 0.00005 * multiplier) {
                         this.currentAction = ActionType.CHEST;
                         return true;
@@ -247,7 +311,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         }
                     }
                     
-                    // 看板設置アクション（家にいる時限定）
+                    // 看板設置アクション（家にいる時限定） (0.00005)
                     if (Math.random() < 0.00005 * multiplier) {
                         if (players.isPresent() && !players.get().isEmpty()) {
                             if (com.example.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
@@ -257,9 +321,21 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         }
                     }
                     
-                    // 音を鳴らすホラーアクション
+                    // 音を鳴らすホラーアクション (0.0002)
                     if (Math.random() < 0.0002 * multiplier) {
                         this.currentAction = ActionType.SOUND;
+                        return true;
+                    }
+                    
+                    // 不気味なアイテムをドロップするアクション (0.0003)
+                    if (Math.random() < 0.0003 * multiplier) {
+                        this.currentAction = ActionType.DROP;
+                        return true;
+                    }
+                    
+                    // 視界外にいる特定のモブ（村人、猫、犬、イリジャーなど）を殺害するアクション
+                    if (Math.random() < 0.0005 * multiplier) {
+                        this.currentAction = ActionType.KILLING_MOB;
                         return true;
                     }
                 }
@@ -296,6 +372,18 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             this.caveAmbushBehavior.tryStart(level, owner, gameTime);
         } else if (this.currentAction == ActionType.WALK_AWAY) {
             this.walkAwayBehavior.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.BED) {
+            this.bedAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.KILLING_MOB) {
+            this.killingMobAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.TIMER) {
+            this.timerAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.DROP) {
+            this.dropAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.HUNT) {
+            this.huntAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.DUPLICATE) {
+            this.duplicateAction.tryStart(level, owner, gameTime);
         }
         this.currentAction = ActionType.NONE; // リセット
     }
@@ -314,6 +402,12 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.undergroundAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.caveAmbushBehavior.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.walkAwayBehavior.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.bedAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.killingMobAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.timerAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.dropAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.huntAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) return true;
         
         return owner.isActionActive;
     }
@@ -333,6 +427,12 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.undergroundAction.getStatus() == Behavior.Status.RUNNING) this.undergroundAction.tickOrStop(level, owner, gameTime);
         if (this.caveAmbushBehavior.getStatus() == Behavior.Status.RUNNING) this.caveAmbushBehavior.tickOrStop(level, owner, gameTime);
         if (this.walkAwayBehavior.getStatus() == Behavior.Status.RUNNING) this.walkAwayBehavior.tickOrStop(level, owner, gameTime);
+        if (this.bedAction.getStatus() == Behavior.Status.RUNNING) this.bedAction.tickOrStop(level, owner, gameTime);
+        if (this.killingMobAction.getStatus() == Behavior.Status.RUNNING) this.killingMobAction.tickOrStop(level, owner, gameTime);
+        if (this.timerAction.getStatus() == Behavior.Status.RUNNING) this.timerAction.tickOrStop(level, owner, gameTime);
+        if (this.dropAction.getStatus() == Behavior.Status.RUNNING) this.dropAction.tickOrStop(level, owner, gameTime);
+        if (this.huntAction.getStatus() == Behavior.Status.RUNNING) this.huntAction.tickOrStop(level, owner, gameTime);
+        if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) this.duplicateAction.tickOrStop(level, owner, gameTime);
     }
 
     @Override
@@ -352,6 +452,12 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.undergroundAction.getStatus() == Behavior.Status.RUNNING) this.undergroundAction.doStop(level, owner, gameTime);
         if (this.caveAmbushBehavior.getStatus() == Behavior.Status.RUNNING) this.caveAmbushBehavior.doStop(level, owner, gameTime);
         if (this.walkAwayBehavior.getStatus() == Behavior.Status.RUNNING) this.walkAwayBehavior.doStop(level, owner, gameTime);
+        if (this.bedAction.getStatus() == Behavior.Status.RUNNING) this.bedAction.doStop(level, owner, gameTime);
+        if (this.killingMobAction.getStatus() == Behavior.Status.RUNNING) this.killingMobAction.doStop(level, owner, gameTime);
+        if (this.timerAction.getStatus() == Behavior.Status.RUNNING) this.timerAction.doStop(level, owner, gameTime);
+        if (this.dropAction.getStatus() == Behavior.Status.RUNNING) this.dropAction.doStop(level, owner, gameTime);
+        if (this.huntAction.getStatus() == Behavior.Status.RUNNING) this.huntAction.doStop(level, owner, gameTime);
+        if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) this.duplicateAction.doStop(level, owner, gameTime);
 
         // 状態を完全にリセット
         owner.isActionActive = false;

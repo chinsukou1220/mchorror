@@ -27,7 +27,7 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
     private Player targetPlayer = null;
 
     public HouseAction() {
-        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT));
+        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 120, 120);
     }
 
     @Override
@@ -62,6 +62,7 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
                 if (availableActions.isEmpty()) {
                     availableActions.add(5); // Peek
                 }
+                availableActions.add(7); // 足音だけが鳴り続けるアクション
                 
                 this.actionPhase = availableActions.get(level.random.nextInt(availableActions.size()));
                 this.targetPlayer = target;
@@ -98,21 +99,8 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
         
         this.tickCount++;
         
-        // 足音演出のため、25ティックごとに家の周りにランダムテレポートさせる
-        if (this.tickCount % 25 == 0) {
-            BlockPos tpPos = findValidTpPosAroundHouse(level, this.targetPos);
-            owner.teleportTo(tpPos.getX() + 0.5, tpPos.getY(), tpPos.getZ() + 0.5);
-        }
-        
-        // アクション中（テレポート中）にプレイヤーの視界（画面前方）に入った場合は透明化し、
-        // 不自然にテレポートしている姿を見せない（ポルターガイスト演出）
-        if (this.targetPlayer != null && owner.getSensing().hasLineOfSight(this.targetPlayer)) {
-            net.minecraft.world.phys.Vec3 viewVector = this.targetPlayer.getViewVector(1.0F).normalize();
-            net.minecraft.world.phys.Vec3 vectorToEntity = owner.getEyePosition().subtract(this.targetPlayer.getEyePosition()).normalize();
-            if (viewVector.dot(vectorToEntity) > 0.0) {
-                owner.setInvisible(true);
-            }
-        }
+        // 常に透明化して見えないように隠れる
+        owner.setInvisible(true);
         
         if (this.actionPhase == 1 || this.actionPhase == 2) {
             // ドアアクション（遠隔ノック）
@@ -168,6 +156,15 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
             if (this.tickCount >= 60) {
                 endAction(level, owner);
             }
+        } else if (this.actionPhase == 7) {
+            // 家の周りで足音が複数回鳴るだけのアクション
+            if (this.tickCount % 15 == 0 && this.tickCount <= 90) {
+                BlockPos tpPos = findValidTpPosAroundHouse(level, this.targetPos);
+                level.playSound(null, tpPos, SoundEvents.ZOMBIE_STEP, SoundSource.HOSTILE, 0.8f, 1.0f);
+            }
+            if (this.tickCount >= 100) {
+                endAction(level, owner);
+            }
         } else {
             endAction(level, owner);
         }
@@ -186,6 +183,7 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
             owner.lastWarpTime = gameTime;
         }
         owner.isActionActive = false;
+        owner.setInvisible(false); // アクション終了時に透明化を解除
     }
 
     private BlockPos findValidTpPosAroundHouse(ServerLevel level, BlockPos center) {

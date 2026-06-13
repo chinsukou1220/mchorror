@@ -22,6 +22,10 @@ import net.minecraft.world.item.SpawnEggItem;
 import com.example.entity.sensor.GlobalPlayerSensor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.item.BlockItem;
+import com.example.block.GhostBlock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -67,6 +71,19 @@ public class TemplateMod implements ModInitializer {
 			BuiltInRegistries.SOUND_EVENT,
 			new ResourceLocation(MOD_ID, "creepy_sound_1"),
 			SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "creepy_sound_1"))
+	);
+
+	// Register Ghost Block
+	public static final Block GHOST_BLOCK = Registry.register(
+			BuiltInRegistries.BLOCK,
+			new ResourceLocation(MOD_ID, "ghost_block"),
+			new GhostBlock(BlockBehaviour.Properties.copy(net.minecraft.world.level.block.Blocks.BLACK_STAINED_GLASS).strength(-1.0F, 3600000.0F))
+	);
+
+	public static final Item GHOST_BLOCK_ITEM = Registry.register(
+			BuiltInRegistries.ITEM,
+			new ResourceLocation(MOD_ID, "ghost_block"),
+			new BlockItem(GHOST_BLOCK, new Item.Properties())
 	);
 
 	@Override

@@ -223,7 +223,7 @@ public class HorrorSteveAi {
                                             owner.isChargingToAttack = true;
                                             owner.chargeTicks = 0;
                                             owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-                                            // 突っ込んでくるときの共通現象として暗闇を付与（3秒間に変更）
+                                            // 突っ込んでくるときの暗闇エフェクトを付与
                                             target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 60, 0, false, false));
                                         } else {
                                             owner.hasBeenSeenSinceWarp = true;
@@ -247,6 +247,58 @@ public class HorrorSteveAi {
                                 if (!canSee) {
                                     // 射線が通っていない（壁の裏などにワープした）場合は、射線が通るまで近づく
                                     owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(target, false), 1.2f, 3));
+                                    
+                                    // --- スタック検知とワープ処理 ---
+                                    if (owner.tickCount % 20 == 0) { // 1秒ごとにチェック
+                                        if (owner.position().distanceToSqr(owner.lastInvisiblePos) < 2.0) {
+                                            owner.invisibleStuckTicks++;
+                                        } else {
+                                            owner.invisibleStuckTicks = 0;
+                                        }
+                                        owner.lastInvisiblePos = owner.position();
+                                        
+                                        // 3秒間（3回のチェック）あまり動いていなかったらワープ
+                                        if (owner.invisibleStuckTicks >= 3) {
+                                            owner.invisibleStuckTicks = 0;
+                                            
+                                            // プレイヤーの方へ 5〜15ブロック近づく（水平方向で計算）
+                                            double dx = target.getX() - owner.getX();
+                                            double dz = target.getZ() - owner.getZ();
+                                            double dist = Math.sqrt(dx * dx + dz * dz);
+                                            double moveDist = Math.min(dist - 3.0, 5.0 + level.random.nextDouble() * 10.0);
+                                            
+                                            if (moveDist > 0 && dist > 0) {
+                                                double baseAngle = Math.atan2(dz, dx);
+                                                net.minecraft.core.BlockPos validP = null;
+                                                
+                                                // 広めの扇形（-60度〜+60度）の範囲で空洞を最大10回探す
+                                                for (int i = 0; i < 10; i++) {
+                                                    double angleOffset = (level.random.nextDouble() - 0.5) * (Math.PI * 2.0 / 3.0);
+                                                    double finalAngle = baseAngle + angleOffset;
+                                                    
+                                                    int px = (int)(owner.getX() + Math.cos(finalAngle) * moveDist);
+                                                    int pz = (int)(owner.getZ() + Math.sin(finalAngle) * moveDist);
+                                                    int py = target.blockPosition().getY();
+                                                    
+                                                    // プレイヤーの高さ周辺で安全な床を探す
+                                                    for (int y = py + 15; y >= py - 15; y--) {
+                                                        net.minecraft.core.BlockPos check = new net.minecraft.core.BlockPos(px, y, pz);
+                                                        if (level.getBlockState(check).isAir() && level.getBlockState(check.above()).isAir() && level.getBlockState(check.below()).canOcclude()) {
+                                                            validP = check;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (validP != null) {
+                                                        break; // 見つかったら即終了
+                                                    }
+                                                }
+                                                
+                                                if (validP != null) {
+                                                    owner.teleportTo(validP.getX() + 0.5, validP.getY(), validP.getZ() + 0.5);
+                                                }
+                                            }
+                                        }
+                                    }
                                 } else {
                                     // 射線が通った場合
                                     if (owner.isAggressiveStalking) {
@@ -258,8 +310,9 @@ public class HorrorSteveAi {
                                     }
                                 }
                                 
-                                // 壁の裏（canSee=false）なら透明化、射線が通った（canSee=true）なら実体化
+                                // 壁の裏（canSee=false）なら透明化＆無音、射線が通った（canSee=true）なら実体化＆音復活
                                 owner.setInvisible(!canSee);
+                                owner.setSilent(!canSee);
                             }
                         }
                     }

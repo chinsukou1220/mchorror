@@ -22,7 +22,91 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
     private BlockPos openedChestPos = null;
 
     public ChestAction() {
-        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT));
+        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 100, 100);
+    }
+
+    /**
+     * プレイヤー周辺のチェストに怪奇現象を起こす（HuntAction等から直接呼び出し可能）。
+     * チェスト開閉アニメーションは省略し、即時系アクション（メッセージ挿入/シャッフル/盗難）のみ実行。
+     */
+    public static void doCreepyChest(ServerLevel level, Player target) {
+        BlockPos origin = target.blockPosition();
+        List<BlockPos> chestPositions = new ArrayList<>();
+
+        for (int dx = -15; dx <= 15; dx++) {
+            for (int dy = -5; dy <= 5; dy++) {
+                for (int dz = -15; dz <= 15; dz++) {
+                    BlockPos checkPos = origin.offset(dx, dy, dz);
+                    if (level.getBlockState(checkPos).is(Blocks.CHEST)) {
+                        chestPositions.add(checkPos);
+                    }
+                }
+            }
+        }
+
+        if (chestPositions.isEmpty()) return;
+
+        BlockPos targetChestPos = chestPositions.get(level.random.nextInt(chestPositions.size()));
+        BlockEntity blockEntity = level.getBlockEntity(targetChestPos);
+
+        if (blockEntity instanceof Container container) {
+            int actionType = level.random.nextInt(3); // 0〜2（開閉アニメは除外）
+
+            switch (actionType) {
+                case 0:
+                    // メッセージ/すり替え
+                    boolean foundEmpty = false;
+                    for (int i = 0; i < container.getContainerSize(); i++) {
+                        if (container.getItem(i).isEmpty()) {
+                            ItemStack paper = new ItemStack(Items.PAPER);
+                            String message = com.example.util.HorrorMessages.getRandomMessage(level.random);
+                            paper.setHoverName(Component.literal("§c" + message));
+                            container.setItem(i, paper);
+                            foundEmpty = true;
+                            break;
+                        }
+                    }
+                    if (!foundEmpty) {
+                        int randomSlot = level.random.nextInt(container.getContainerSize());
+                        container.setItem(randomSlot, new ItemStack(Items.ROTTEN_FLESH, 1));
+                    }
+                    break;
+
+                case 1:
+                    // シャッフル
+                    List<ItemStack> items = new ArrayList<>();
+                    for (int i = 0; i < container.getContainerSize(); i++) {
+                        if (!container.getItem(i).isEmpty()) {
+                            items.add(container.getItem(i).copy());
+                            container.setItem(i, ItemStack.EMPTY);
+                        }
+                    }
+                    Collections.shuffle(items);
+                    List<Integer> slots = new ArrayList<>();
+                    for (int i = 0; i < container.getContainerSize(); i++) {
+                        slots.add(i);
+                    }
+                    Collections.shuffle(slots);
+                    for (int i = 0; i < items.size(); i++) {
+                        container.setItem(slots.get(i), items.get(i));
+                    }
+                    break;
+
+                case 2:
+                    // 盗難
+                    List<Integer> filledSlots = new ArrayList<>();
+                    for (int i = 0; i < container.getContainerSize(); i++) {
+                        if (!container.getItem(i).isEmpty()) {
+                            filledSlots.add(i);
+                        }
+                    }
+                    if (!filledSlots.isEmpty()) {
+                        int slotToSteal = filledSlots.get(level.random.nextInt(filledSlots.size()));
+                        container.setItem(slotToSteal, ItemStack.EMPTY);
+                    }
+                    break;
+            }
+        }
     }
 
     @Override

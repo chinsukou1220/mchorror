@@ -6,7 +6,8 @@
 		"ExampleMixin",
 		"ZombieSunlightMixin",
 		"PillagerMixin",
-		"BlockItemMixin"
+		"BlockItemMixin",
+		"ServerPlayerGameModeMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

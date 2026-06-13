@@ -32,60 +32,59 @@ public class SignAction extends Behavior<HorrorSteveEntity> {
         return true;
     }
 
+    /**
+     * プレイヤー周囲に不気味な看板を設置する（HuntAction等から直接呼び出し可能）。
+     */
+    public static void placeCreepySign(ServerLevel level, Player target) {
+        BlockPos targetPos = null;
+        BlockPos origin = target.blockPosition();
+        
+        for (int i = 0; i < 30; i++) {
+            int dx = level.random.nextInt(15) - 7;
+            int dz = level.random.nextInt(15) - 7;
+            int dy = level.random.nextInt(5) - 2;
+            
+            if (Math.abs(dx) < 3 && Math.abs(dz) < 3) {
+                continue;
+            }
+            
+            BlockPos candidate = origin.offset(dx, dy, dz);
+            if (level.isEmptyBlock(candidate) && level.getBlockState(candidate.below()).isSolidRender(level, candidate.below())) {
+                targetPos = candidate;
+                break;
+            }
+        }
+        
+        if (targetPos != null) {
+            double dx = target.getX() - targetPos.getX();
+            double dz = target.getZ() - targetPos.getZ();
+            float angle = (float)(Math.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0F;
+            int rotation = net.minecraft.util.Mth.floor((double)((angle + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15;
+            
+            BlockState signState = Blocks.OAK_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION, rotation);
+            level.setBlock(targetPos, signState, 3);
+            
+            BlockEntity blockEntity = level.getBlockEntity(targetPos);
+            if (blockEntity instanceof SignBlockEntity signEntity) {
+                String message = HorrorMessages.getRandomMessage(level.random);
+                
+                signEntity.updateText((signText) -> {
+                    return signText.setMessage(1, Component.literal(message))
+                                   .setColor(DyeColor.RED)
+                                   .setHasGlowingText(true);
+                }, true);
+                
+                signEntity.setChanged();
+                level.sendBlockUpdated(targetPos, signState, signState, 3);
+            }
+        }
+    }
+
     @Override
     protected void start(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
         Optional<List<Player>> optionalPlayers = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS);
         if (optionalPlayers.isPresent() && !optionalPlayers.get().isEmpty()) {
-            Player target = optionalPlayers.get().get(0);
-            
-            // プレイヤーの周囲（半径5〜10ブロック）の地面を探す
-            BlockPos targetPos = null;
-            BlockPos origin = target.blockPosition();
-            
-            for (int i = 0; i < 30; i++) {
-                int dx = level.random.nextInt(15) - 7;
-                int dz = level.random.nextInt(15) - 7;
-                int dy = level.random.nextInt(5) - 2;
-                
-                // 近すぎる場所は避ける（半径3ブロック以内は除外）
-                if (Math.abs(dx) < 3 && Math.abs(dz) < 3) {
-                    continue;
-                }
-                
-                BlockPos candidate = origin.offset(dx, dy, dz);
-                if (level.isEmptyBlock(candidate) && level.getBlockState(candidate.below()).isSolidRender(level, candidate.below())) {
-                    targetPos = candidate;
-                    break;
-                }
-            }
-            
-            if (targetPos != null) {
-                // 看板をプレイヤーの方向に向けて設置する
-                double dx = target.getX() - targetPos.getX();
-                double dz = target.getZ() - targetPos.getZ();
-                float angle = (float)(Math.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0F;
-                int rotation = net.minecraft.util.Mth.floor((double)((angle + 180.0F) * 16.0F / 360.0F) + 0.5D) & 15;
-                
-                BlockState signState = Blocks.OAK_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION, rotation);
-                level.setBlock(targetPos, signState, 3);
-                
-                // 看板の文字を設定
-                BlockEntity blockEntity = level.getBlockEntity(targetPos);
-                if (blockEntity instanceof SignBlockEntity signEntity) {
-                    String message = HorrorMessages.getRandomMessage(level.random);
-                    
-                    // 看板のテキストを設定（赤色、光る）
-                    signEntity.updateText((signText) -> {
-                        return signText.setMessage(1, Component.literal(message))
-                                       .setColor(DyeColor.RED)
-                                       .setHasGlowingText(true);
-                    }, true); // true = front text
-                    
-                    // 看板の変更を保存
-                    signEntity.setChanged();
-                    level.sendBlockUpdated(targetPos, signState, signState, 3);
-                }
-            }
+            placeCreepySign(level, optionalPlayers.get().get(0));
         }
         
         owner.isActionActive = false;

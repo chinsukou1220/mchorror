@@ -28,7 +28,7 @@ public class UndergroundAction extends Behavior<HorrorSteveEntity> {
     private List<BlockPos> torchPositions = new ArrayList<>();
 
     public UndergroundAction() {
-        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT));
+        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 160, 160);
     }
 
     @Override
@@ -186,6 +186,14 @@ public class UndergroundAction extends Behavior<HorrorSteveEntity> {
                     }
                     
                     if (targetBlock != null) {
+                        // 破壊するブロックの上2ブロックを砂利に置き換える
+                        level.setBlock(targetBlock.above(1), Blocks.GRAVEL.defaultBlockState(), 3);
+                        level.setBlock(targetBlock.above(2), Blocks.GRAVEL.defaultBlockState(), 3);
+                        
+                        // 確実に大きな破壊音を鳴らす
+                        level.playSound(null, targetBlock, SoundEvents.STONE_BREAK, SoundSource.AMBIENT, 3.0f, 0.8f);
+                        
+                        // 土台となっているブロックを破壊（直後に砂利が落ちてくる）
                         level.destroyBlock(targetBlock, true);
                     } else {
                         // 見つからなければ音だけ鳴らす

@@ -25,42 +25,49 @@ public class PlaceAction extends Behavior<HorrorSteveEntity> {
         return true;
     }
 
+    /**
+     * プレイヤーが最近置いたブロックを周囲にランダム設置する（HuntAction等から直接呼び出し可能）。
+     */
+    public static void placeCreepyBlock(ServerLevel level, Player target) {
+        PlayerBlockTracker.PlayerData data = PlayerBlockTracker.getPlayerData(target.getUUID());
+        
+        if (data != null && !data.recentBlocks.isEmpty() && data.lastPlacedPos != null) {
+            int randomIndex = level.random.nextInt(data.recentBlocks.size());
+            BlockState blockToPlace = data.recentBlocks.get(randomIndex).state;
+            
+            // 1. 最後に置いたブロックの周囲
+            tryPlaceBlockAround(level, data.lastPlacedPos, blockToPlace);
+            
+            // 2. プレイヤーの周囲
+            tryPlaceBlockAround(level, target.blockPosition(), blockToPlace);
+        }
+    }
+
+    private static void tryPlaceBlockAround(ServerLevel level, BlockPos origin, BlockState blockToPlace) {
+        BlockPos placePos = null;
+        
+        for (int i = 0; i < 50; i++) {
+            int dx = level.random.nextInt(9) - 4;
+            int dz = level.random.nextInt(9) - 4;
+            int dy = level.random.nextInt(5) - 2;
+            
+            BlockPos candidate = origin.offset(dx, dy, dz);
+            if (level.isEmptyBlock(candidate) && level.getBlockState(candidate.below()).isSolidRender(level, candidate.below())) {
+                placePos = candidate;
+                break;
+            }
+        }
+        
+        if (placePos != null) {
+            level.setBlock(placePos, blockToPlace, 3);
+        }
+    }
+
     @Override
     protected void start(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
         Optional<List<Player>> optionalPlayers = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS);
         if (optionalPlayers.isPresent() && !optionalPlayers.get().isEmpty()) {
-            Player target = optionalPlayers.get().get(0);
-            PlayerBlockTracker.PlayerData data = PlayerBlockTracker.getPlayerData(target.getUUID());
-            
-            if (data != null && !data.recentBlocks.isEmpty() && data.lastPlacedPos != null) {
-                // ランダムなブロックを選択
-                int randomIndex = level.random.nextInt(data.recentBlocks.size());
-                BlockState blockToPlace = data.recentBlocks.get(randomIndex).state;
-                
-                // 最後に置いたブロックの周囲（半径4ブロック以内）の空きスペースを探す
-                BlockPos origin = data.lastPlacedPos;
-                BlockPos placePos = null;
-                
-                for (int i = 0; i < 50; i++) {
-                    int dx = level.random.nextInt(9) - 4; // -4 to 4
-                    int dz = level.random.nextInt(9) - 4;
-                    int dy = level.random.nextInt(5) - 2; // -2 to 2
-                    
-                    BlockPos candidate = origin.offset(dx, dy, dz);
-                    // 候補地が空気ブロックで、かつその下が固体ブロックであること
-                    if (level.isEmptyBlock(candidate) && level.getBlockState(candidate.below()).isSolidRender(level, candidate.below())) {
-                        placePos = candidate;
-                        break;
-                    }
-                }
-                
-                if (placePos != null) {
-                    // ブロックを設置
-                    level.setBlock(placePos, blockToPlace, 3);
-                    
-                    // スティーブ自身は出現させず、ブロックだけを不気味に増殖させる
-                }
-            }
+            placeCreepyBlock(level, optionalPlayers.get().get(0));
         }
         
         // アクション終了処理
