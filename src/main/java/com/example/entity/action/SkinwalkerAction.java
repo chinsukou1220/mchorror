@@ -1,0 +1,136 @@
+package com.example.entity.action;
+
+import com.example.entity.HorrorSteveEntity;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
+
+    private PathfinderMob dummyMob = null;
+    private Player targetPlayer = null;
+    private int ticksActive = 0;
+
+    public SkinwalkerAction() {
+        // デフォルトは60ティック(3秒)で強制終了してしまうため、1200ティック(60秒)に延長
+        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 1200);
+    }
+
+    @Override
+    protected boolean checkExtraStartConditions(ServerLevel level, HorrorSteveEntity owner) {
+        return true;
+    }
+
+    @Override
+    protected void start(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+        Optional<List<Player>> optionalPlayers = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS);
+        if (optionalPlayers.isEmpty() || optionalPlayers.get().isEmpty()) {
+            this.finishAction(owner, level);
+            return;
+        }
+
+        this.targetPlayer = optionalPlayers.get().get(0);
+        this.ticksActive = 0;
+
+        // ランダムなモブを選択
+        EntityType<?>[] types = {EntityType.ZOMBIE, EntityType.VILLAGER, EntityType.PIG, EntityType.COW, EntityType.SHEEP};
+        EntityType<?> selectedType = types[level.random.nextInt(types.length)];
+
+        // プレイヤーの視線の先（前方15〜20ブロック）の座標を計算
+        Vec3 lookVec = this.targetPlayer.getLookAngle();
+        double distance = 15.0 + level.random.nextDouble() * 5.0;
+        double spawnX = this.targetPlayer.getX() + lookVec.x * distance;
+        double spawnZ = this.targetPlayer.getZ() + lookVec.z * distance;
+        double spawnY = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) spawnX, (int) spawnZ);
+
+        // ダミーを生成してスポーン
+        this.dummyMob = (PathfinderMob) selectedType.create(level);
+        if (this.dummyMob != null) {
+            this.dummyMob.setPos(spawnX, spawnY, spawnZ);
+            this.dummyMob.getTags().add("is_skinwalker"); // サーバー側の目印タグ
+            // クライアント側に同期するためにカスタムネームをマーカーとして使用（タグはサーバー専用で同期されない）
+            this.dummyMob.setCustomName(net.minecraft.network.chat.Component.literal("skinwalker"));
+            this.dummyMob.setCustomNameVisible(false); // 名前は非表示
+            
+            // ゾンビと同じくらいの歩行速度を設定（Base 0.23程度）
+            this.dummyMob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(0.23D);
+            // 体力を1000に設定（攻撃で倒されてドロップが出るのを防ぐ）
+            this.dummyMob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000.0D);
+            this.dummyMob.setHealth(1000.0F);
+            // ドロップ完全無効化（経験値もアイテムも落とさない）
+            this.dummyMob.setPersistenceRequired();
+            
+            level.addFreshEntity(this.dummyMob);
+            
+            // スティーブ本体は透明化して待機
+            owner.setInvisible(true);
+            owner.isActionActive = true;
+        } else {
+            this.finishAction(owner, level);
+        }
+    }
+
+    @Override
+    protected boolean canStillUse(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+        if (this.dummyMob == null || !this.dummyMob.isAlive() || this.targetPlayer == null || !this.targetPlayer.isAlive()) {
+            return false;
+        }
+        
+        // もしダミーが攻撃されたら即座に終了（ダメージを受けてhurtTimeが0より大きい時）
+        if (this.dummyMob.hurtTime > 0) {
+            return false;
+        }
+
+        // タイムアウト（約60秒 = 1200ティック）
+        if (this.ticksActive > 1200) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void tick(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+        this.ticksActive++;
+
+        if (this.dummyMob != null && this.targetPlayer != null) {
+            // ダミーのAIを上書きして強制的にプレイヤーへ向かわせる
+            this.dummyMob.getNavigation().moveTo(this.targetPlayer, 1.0D);
+
+            double dist = this.dummyMob.distanceTo(this.targetPlayer);
+            
+            // 3ブロック以内に近づいたらダメージを与えて消滅
+            if (dist < 3.0D) {
+                this.targetPlayer.hurt(level.damageSources().mobAttack(this.dummyMob), 5.0F); // 5ダメージ
+                this.finishAction(owner, level); // 内部で dummyMob を削除
+            }
+        }
+    }
+
+    @Override
+    protected void stop(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+        this.finishAction(owner, level);
+    }
+
+    private void finishAction(HorrorSteveEntity owner, ServerLevel level) {
+        if (this.dummyMob != null && !this.dummyMob.isRemoved()) {
+            this.dummyMob.discard(); // ダミーを消去
+            this.dummyMob = null;
+        }
+        
+        // アクション終了、スティーブをワープ待機状態へ戻す
+        owner.isActionActive = false;
+        owner.lastWarpTime = level.getGameTime();
+        this.targetPlayer = null;
+    }
+}

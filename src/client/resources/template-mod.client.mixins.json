@@ -3,7 +3,9 @@
 	"package": "com.example.client.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"client": [
-		"ExampleClientMixin"
+		"ExampleClientMixin",
+		"SkinwalkerRendererMixin",
+		"QuadrupedModelAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

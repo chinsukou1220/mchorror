@@ -38,7 +38,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         TIMER,
         DROP,
         HUNT,
-        DUPLICATE
+        DUPLICATE,
+        SKINWALKER
     }
     
     // 呼び出すための具体的なアクションを保持しておく
@@ -59,6 +60,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
     private final DropAction dropAction = new DropAction();
     private final HuntAction huntAction = new HuntAction();
     private final DuplicateAction duplicateAction = new DuplicateAction();
+    private final SkinwalkerAction skinwalkerAction = new SkinwalkerAction();
     
     // 次に実行するアクションの種類
     private ActionType currentAction = ActionType.NONE;
@@ -289,6 +291,12 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         }
                     }
                     
+                    // 他のモブに化けて近づいてくるアクション (一時的に無効化)
+                    if (Math.random() < 0.0 * multiplier) {
+                        this.currentAction = ActionType.SKINWALKER;
+                        return true;
+                    }
+
                     // 置いたブロックを全て破壊するアクション (0.00002)
                     if (Math.random() < 0.00002 * multiplier) {
                         this.currentAction = ActionType.BREAK;
@@ -384,6 +392,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             this.huntAction.tryStart(level, owner, gameTime);
         } else if (this.currentAction == ActionType.DUPLICATE) {
             this.duplicateAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.SKINWALKER) {
+            this.skinwalkerAction.tryStart(level, owner, gameTime);
         }
         this.currentAction = ActionType.NONE; // リセット
     }
@@ -408,6 +418,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.dropAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.huntAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) return true;
         
         return owner.isActionActive;
     }
@@ -433,6 +444,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.dropAction.getStatus() == Behavior.Status.RUNNING) this.dropAction.tickOrStop(level, owner, gameTime);
         if (this.huntAction.getStatus() == Behavior.Status.RUNNING) this.huntAction.tickOrStop(level, owner, gameTime);
         if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) this.duplicateAction.tickOrStop(level, owner, gameTime);
+        if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) this.skinwalkerAction.tickOrStop(level, owner, gameTime);
     }
 
     @Override
@@ -458,6 +470,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.dropAction.getStatus() == Behavior.Status.RUNNING) this.dropAction.doStop(level, owner, gameTime);
         if (this.huntAction.getStatus() == Behavior.Status.RUNNING) this.huntAction.doStop(level, owner, gameTime);
         if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) this.duplicateAction.doStop(level, owner, gameTime);
+        if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) this.skinwalkerAction.doStop(level, owner, gameTime);
 
         // 状態を完全にリセット
         owner.isActionActive = false;
