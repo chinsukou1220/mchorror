@@ -37,11 +37,11 @@ public class HorrorDebugCommand {
         }
 
         ServerLevel level = context.getSource().getLevel();
-        // 半径1000ブロック以内のスティーブを検索
-        List<HorrorSteveEntity> steves = level.getEntitiesOfClass(HorrorSteveEntity.class, new AABB(context.getSource().getPosition(), context.getSource().getPosition()).inflate(1000.0));
+        // ディメンション内のすべてのスティーブを検索（半径10万ブロック）
+        List<HorrorSteveEntity> steves = level.getEntitiesOfClass(HorrorSteveEntity.class, new AABB(context.getSource().getPosition(), context.getSource().getPosition()).inflate(100000.0));
 
         if (steves.isEmpty()) {
-            context.getSource().sendFailure(Component.literal("No Horror Steve found nearby. Spawn one first."));
+            context.getSource().sendFailure(Component.literal("No Horror Steve found in this dimension. Spawn one first."));
             return 0;
         }
 

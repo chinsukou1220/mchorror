@@ -188,17 +188,17 @@ public class HorrorSteveAi {
                         int thresholdTicks;
                         
                         if (distanceToPlayer <= 5.0) {
-                            thresholdDot = 0.1;
+                            thresholdDot = 0.0; // 視界に入った瞬間に見つかったと判定
                             thresholdTicks = 0;
                         } else if (distanceToPlayer <= 10.0) {
-                            thresholdDot = 0.3;
-                            thresholdTicks = 2;
+                            thresholdDot = 0.2; // 以前よりかなり緩め
+                            thresholdTicks = 0; // すぐに判定
                         } else if (distanceToPlayer >= 20.0) {
-                            thresholdDot = 0.9;
-                            thresholdTicks = 20;
+                            thresholdDot = 0.8; // 遠くても少し画面の端に入れば判定されやすい
+                            thresholdTicks = 10; // 以前の1秒から0.5秒に短縮
                         } else {
-                            thresholdDot = 0.8;
-                            thresholdTicks = 20;
+                            thresholdDot = 0.6; // 10~20ブロックの中距離もかなり緩め
+                            thresholdTicks = 10; // 0.5秒
                         }
                         
                         // 基準以上なら画面に捉えたと判定

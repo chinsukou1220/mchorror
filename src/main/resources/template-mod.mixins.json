@@ -9,7 +9,8 @@
 		"BlockItemMixin",
 		"ServerPlayerGameModeMixin",
 		"ServerPlayerSleepMixin",
-		"MobCategoryMixin"
+		"MobCategoryMixin",
+		"AnimalMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

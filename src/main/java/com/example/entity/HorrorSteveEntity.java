@@ -33,6 +33,9 @@ public class HorrorSteveEntity extends PathfinderMob {
     public com.example.entity.action.ActionController.ActionType forcedDebugAction = com.example.entity.action.ActionController.ActionType.NONE;
     public int forcedUndergroundPhase = 0; // 0の場合はランダム
     public net.minecraft.world.phys.Vec3 ambushStartPos = null; // 特定の場所から強襲を開始するための座標保持用
+    
+    // --- チャンク維持用変数 ---
+    public net.minecraft.world.level.ChunkPos lastForcedChunk = null;
 
     public HorrorSteveEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -70,12 +73,40 @@ public class HorrorSteveEntity extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
-        if (!this.level().isClientSide && this.tickCount % 20 == 0) {
+        if (!this.level().isClientSide) {
+            ServerLevel serverLevel = (ServerLevel) this.level();
+            
             // 毎秒自動回復（再生）
-            if (this.getHealth() < this.getMaxHealth()) {
-                this.heal(50.0F); // 1秒ごとに50回復
+            if (this.tickCount % 20 == 0) {
+                if (this.getHealth() < this.getMaxHealth()) {
+                    this.heal(50.0F); // 1秒ごとに50回復
+                }
+            }
+            
+            // チャンク強制読み込み（Forceload）の処理
+            net.minecraft.world.level.ChunkPos currentChunk = new net.minecraft.world.level.ChunkPos(this.blockPosition());
+            if (this.lastForcedChunk == null || !this.lastForcedChunk.equals(currentChunk)) {
+                if (this.lastForcedChunk != null) {
+                    serverLevel.setChunkForced(this.lastForcedChunk.x, this.lastForcedChunk.z, false);
+                }
+                serverLevel.setChunkForced(currentChunk.x, currentChunk.z, true);
+                this.lastForcedChunk = currentChunk;
             }
         }
+    }
+    
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!this.level().isClientSide && this.lastForcedChunk != null) {
+            // KILLED（倒された）または DISCARDED（ダミーが用済みで消去された）場合のみ強制読み込みを解除する。
+            // これにより、サーバー再起動時（UNLOADED）に強制読み込みが解除されてしまうのを防ぎ、
+            // 再起動後もスティーブのいるチャンクが自動的に読み込まれるようにする。
+            if (reason == RemovalReason.KILLED || reason == RemovalReason.DISCARDED) {
+                ((ServerLevel) this.level()).setChunkForced(this.lastForcedChunk.x, this.lastForcedChunk.z, false);
+                this.lastForcedChunk = null;
+            }
+        }
+        super.remove(reason);
     }
 
     // --- ここから追加の全耐性（無敵化）処理 ---

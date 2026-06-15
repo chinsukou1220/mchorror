@@ -40,24 +40,24 @@ public abstract class GuiMixin {
             int screenWidth = mc.getWindow().getGuiScaledWidth();
             int screenHeight = mc.getWindow().getGuiScaledHeight();
 
-            // 揺れの強さに応じて描画するノイズブロックの数を変える
-            int noiseCount = (int) (CameraShakeHandler.shakeIntensity * 20);
+            // 揺れの強さに応じて描画するノイズブロックの数を変える（元の1/4に削減）
+            int noiseCount = (int) (CameraShakeHandler.shakeIntensity * 5);
             
-            // 揺れが特に強い場合は画面全体を少し暗くするフラッシュを入れる
-            if (CameraShakeHandler.shakeIntensity > 3.0f && RANDOM.nextFloat() < 0.2f) {
-                guiGraphics.fill(0, 0, screenWidth, screenHeight, 0x66000000); // 半透明の黒
+            // 揺れが特に強い場合は画面全体を少し暗くするフラッシュを入れる（確率と濃さを低下）
+            if (CameraShakeHandler.shakeIntensity > 1.5f && RANDOM.nextFloat() < 0.05f) {
+                guiGraphics.fill(0, 0, screenWidth, screenHeight, 0x33000000); // さらに薄い半透明の黒
             }
 
             // ランダムな位置・サイズの矩形を描画してグリッチエフェクトを作る
             for (int i = 0; i < noiseCount; i++) {
                 int x = RANDOM.nextInt(screenWidth);
                 int y = RANDOM.nextInt(screenHeight);
-                int width = 10 + RANDOM.nextInt((int)(100 * CameraShakeHandler.shakeIntensity));
-                int height = 2 + RANDOM.nextInt(15);
+                int width = 10 + RANDOM.nextInt((int)(30 * CameraShakeHandler.shakeIntensity)); // 横幅も控えめに
+                int height = 1 + RANDOM.nextInt(5); // 縦幅も細く
                 
-                // 色は黒・グレー系・ランダムで不気味な白
-                int alpha = 50 + RANDOM.nextInt(150);
-                int colorValue = RANDOM.nextInt(200);
+                // 色は黒・グレー系・ランダムで不気味な白（透明度を大きく下げる）
+                int alpha = 20 + RANDOM.nextInt(60);
+                int colorValue = RANDOM.nextInt(150);
                 
                 // ARGBフォーマット: (Alpha << 24) | (Red << 16) | (Green << 8) | Blue
                 int color = (alpha << 24) | (colorValue << 16) | (colorValue << 8) | colorValue;

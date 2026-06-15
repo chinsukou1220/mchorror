@@ -41,6 +41,12 @@ public class PlayerBlockTracker {
         }
         data.recentBlocks.addLast(newRecord);
         
+        // 松明は建築物（クラスター）として記録・複製しないように除外する
+        if (state.is(net.minecraft.world.level.block.Blocks.TORCH) || state.is(net.minecraft.world.level.block.Blocks.WALL_TORCH) || state.is(net.minecraft.world.level.block.Blocks.SOUL_TORCH) || state.is(net.minecraft.world.level.block.Blocks.SOUL_WALL_TORCH)) {
+            data.lastPlacedPos = pos;
+            return; // クラスター処理を行わずに終了
+        }
+
         // 地下での足場用ブロック（土、石、丸石など）はクラスター（建築物）として記録しない
         if (isIgnoredUndergroundBlock(state, pos)) {
             data.lastPlacedPos = pos;

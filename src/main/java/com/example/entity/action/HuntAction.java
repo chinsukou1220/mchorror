@@ -92,7 +92,7 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
                 // 10秒後に常時暗闇、ノイズと揺れ（アクション終了まで）
                 this.targetPlayer.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 1200, 0, false, false));
                 if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
-                    com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 1200, 6.0f);
+                    com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 1200, 3.0f);
                 }
                 
                 // チェイス開始

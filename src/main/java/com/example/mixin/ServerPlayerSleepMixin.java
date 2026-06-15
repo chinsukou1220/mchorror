@@ -18,7 +18,7 @@ public class ServerPlayerSleepMixin {
     private void onStartSleepInBed(BlockPos bedPos, CallbackInfoReturnable<Either<Player.BedSleepingProblem, Unit>> cir) {
         if (com.example.world.RedNightManager.isRedNightActive) {
             ServerPlayer player = (ServerPlayer)(Object)this;
-            player.displayClientMessage(Component.literal("§c赤い夜の恐怖で眠ることができない..."), true);
+            player.displayClientMessage(Component.literal("§cToo scared to sleep..."), true);
             cir.setReturnValue(Either.left(Player.BedSleepingProblem.OTHER_PROBLEM));
         }
     }
