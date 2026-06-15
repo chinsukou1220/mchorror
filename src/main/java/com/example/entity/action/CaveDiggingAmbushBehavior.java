@@ -52,14 +52,20 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
             this.phase1Timer = 0;
             this.chargeTimer = 0;
 
-            // プレイヤーから約10ブロック離れた位置にスポーン
-            double angle = level.random.nextDouble() * Math.PI * 2;
-            double distance = 10.0;
-            double fx = target.getX() + Math.cos(angle) * distance;
-            double fz = target.getZ() + Math.sin(angle) * distance;
-            
-            // Y座標はプレイヤーと同じか少し上
-            BlockPos spawnPos = new BlockPos((int)fx, target.blockPosition().getY(), (int)fz);
+            // ambushStartPosが設定されている場合はその位置を使用、なければランダム
+            BlockPos spawnPos;
+            if (owner.ambushStartPos != null) {
+                spawnPos = new BlockPos((int)owner.ambushStartPos.x, (int)owner.ambushStartPos.y, (int)owner.ambushStartPos.z);
+                owner.ambushStartPos = null; // 使い終わったらクリア
+            } else {
+                // プレイヤーから約10ブロック離れた位置にスポーン
+                double angle = level.random.nextDouble() * Math.PI * 2;
+                double distance = 10.0;
+                double fx = target.getX() + Math.cos(angle) * distance;
+                double fz = target.getZ() + Math.sin(angle) * distance;
+                // Y座標はプレイヤーと同じか少し上
+                spawnPos = new BlockPos((int)fx, target.blockPosition().getY(), (int)fz);
+            }
             
             // テレポート先のブロック（2マス分）を岩盤以外なら破壊
             breakBlockIfNotBedrock(level, spawnPos);

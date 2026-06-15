@@ -35,6 +35,7 @@ import com.example.item.HorrorDebugItem;
 public class TemplateMod implements ModInitializer {
 	public static final String MOD_ID = "template-mod";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static final ResourceLocation RED_NIGHT_PACKET = new ResourceLocation(MOD_ID, "red_night");
 
 	// Register Horror Steve Entity
 	public static final EntityType<com.example.entity.HorrorSteveEntity> HORROR_STEVE = Registry.register(
@@ -102,9 +103,16 @@ public class TemplateMod implements ModInitializer {
 			content.accept(HORROR_DEBUG_WAND);
 		});
 
-		// Register Commands
+	// Register Commands
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			HorrorDebugCommand.register(dispatcher);
+		});
+
+		// Register Red Night Tick Event
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_WORLD_TICK.register(level -> {
+			if (level.dimension() == net.minecraft.world.level.Level.OVERWORLD) {
+				com.example.world.RedNightManager.tick(level);
+			}
 		});
 	}
 }

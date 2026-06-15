@@ -76,6 +76,11 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, HorrorSteveEntity owner) {
+        // スキンウォーカー（ダミー）自身は一切の自発的アクションを起こさない
+        if (owner.hasCustomName() && "skinwalker".equals(owner.getCustomName().getString())) {
+            return false;
+        }
+
         this.currentAction = ActionType.NONE;
         
         Optional<List<Player>> players = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS);
@@ -210,6 +215,11 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             // 夜間（日が沈んでいる間）は「背後に回り込む」以外のアクション確率を1.5倍にする
             double multiplier = level.isDay() ? 1.0 : 1.5;
             
+            // Red Night がアクティブな場合は、アクション確率をさらに通常の夜の3倍（昼間の4.5倍）に引き上げる
+            if (com.example.world.RedNightManager.isRedNightActive) {
+                multiplier *= 3.0;
+            }
+            
             // --- 静止状態に応じたアクション（GO_BEHIND） ---
             if (this.playerStationaryTicks >= 200) {
                 // 10秒（200ティック）以上止まっている場合、毎ティック 0.1% (0.001) の確率で背後に現れる（夜間倍率対象外）
@@ -238,17 +248,17 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     isUnderground = com.example.util.UndergroundDetector.isPlayerUnderground(level, players.get().get(0));
                 }
                 
+                // 全環境共通（どこでも発生する）壁掘り強襲アクション (CAVE_AMBUSH)
+                // 確率: 約1000秒(16分)に1回程度 (0.00005)
+                if (Math.random() < 0.00005 * multiplier) {
+                    this.currentAction = ActionType.CAVE_AMBUSH;
+                    return true;
+                }
+                
                 if (isUnderground || isNether) {
                     // ==========================================
                     // 洞窟（地下）・ネザー専用アクション
                     // ==========================================
-                    
-                    // 【新規】壁を掘り破ってくる恐ろしい強襲アクション（洞窟限定）
-                    // 確率: 約1000秒(16分)に1回程度 (0.00005)
-                    if (isUnderground && Math.random() < 0.00005 * multiplier) {
-                        this.currentAction = ActionType.CAVE_AMBUSH;
-                        return true;
-                    }
                     
                     // 【新規】透明で近づき足音だけ残して去り、遠くで見つめるアクション（洞窟・ネザー限定）
                     // 確率: 約250秒(4分)に1回程度 (0.0002)
@@ -291,8 +301,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         }
                     }
                     
-                    // 他のモブに化けて近づいてくるアクション (一時的に無効化)
-                    if (Math.random() < 0.0 * multiplier) {
+                    // 他のモブに化けて近づいてくるアクション
+                    if (Math.random() < 0.0005 * multiplier) {
                         this.currentAction = ActionType.SKINWALKER;
                         return true;
                     }

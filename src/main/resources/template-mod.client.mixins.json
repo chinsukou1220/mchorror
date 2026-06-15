@@ -5,7 +5,12 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "CameraMixin",
-    "GuiMixin"
+    "GuiMixin",
+    "SimpleFogMixin",
+    "SimpleSkyMixin",
+    "HumanoidModelMixin",
+    "QuadrupedModelMixin",
+    "EntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

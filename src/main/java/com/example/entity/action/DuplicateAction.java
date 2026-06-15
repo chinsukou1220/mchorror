@@ -60,15 +60,15 @@ public class DuplicateAction extends Behavior<HorrorSteveEntity> {
                     int widthX = maxX - minX;
                     int widthZ = maxZ - minZ;
 
-                    // オフセットの決定（ランダムに東西南北のいずれかへ、元の幅 ＋ 5ブロック離す）
+                    // オフセットの決定（ランダムに東西南北のいずれかへ、元の幅 ＋ 20ブロック離す）
                     int dx = 0;
                     int dz = 0;
                     int direction = level.random.nextInt(4);
                     switch (direction) {
-                        case 0: dx = widthX + 5; break; // 東
-                        case 1: dx = -(widthX + 5); break; // 西
-                        case 2: dz = widthZ + 5; break; // 南
-                        case 3: dz = -(widthZ + 5); break; // 北
+                        case 0: dx = widthX + 20; break; // 東
+                        case 1: dx = -(widthX + 20); break; // 西
+                        case 2: dz = widthZ + 20; break; // 南
+                        case 3: dz = -(widthZ + 20); break; // 北
                     }
 
                     // ブロックの複製（空気ブロックのみ置き換える）

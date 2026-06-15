@@ -81,14 +81,7 @@ public class DropAction extends Behavior<HorrorSteveEntity> {
         
         if (r == 0) {
             itemToDrop = new ItemStack(Items.PAPER);
-            String[] messages = {
-                "見ているぞ", 
-                "後ろを向くな", 
-                "逃げられない", 
-                "ずっと一緒だ", 
-                "お前の血の匂いがする"
-            };
-            String chosenMessage = messages[level.random.nextInt(messages.length)];
+            String chosenMessage = com.example.util.HorrorMessages.getRandomMessage(level.random);
             itemToDrop.setHoverName(Component.literal(chosenMessage).withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.ITALIC));
         } else if (r == 1) {
             itemToDrop = new ItemStack(Items.RED_DYE, 3 + level.random.nextInt(4));

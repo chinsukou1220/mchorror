@@ -7,7 +7,9 @@
 		"ZombieSunlightMixin",
 		"PillagerMixin",
 		"BlockItemMixin",
-		"ServerPlayerGameModeMixin"
+		"ServerPlayerGameModeMixin",
+		"ServerPlayerSleepMixin",
+		"MobCategoryMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

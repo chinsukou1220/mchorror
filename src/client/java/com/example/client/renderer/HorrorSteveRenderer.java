@@ -18,6 +18,15 @@ public class HorrorSteveRenderer extends MobRenderer<HorrorSteveEntity, PlayerMo
 
     @Override
     public ResourceLocation getTextureLocation(HorrorSteveEntity entity) {
+        if (entity.hasCustomName() && "skinwalker".equals(entity.getCustomName().getString())) {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.level != null) {
+                net.minecraft.world.entity.player.Player closestPlayer = mc.level.getNearestPlayer(entity, 64.0);
+                if (closestPlayer instanceof net.minecraft.client.player.AbstractClientPlayer clientPlayer) {
+                    return clientPlayer.getSkinTextureLocation();
+                }
+            }
+        }
         return TEXTURE;
     }
 }

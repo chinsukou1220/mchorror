@@ -32,6 +32,7 @@ public class HorrorSteveEntity extends PathfinderMob {
     // --- デバッグ＆拡張用変数 ---
     public com.example.entity.action.ActionController.ActionType forcedDebugAction = com.example.entity.action.ActionController.ActionType.NONE;
     public int forcedUndergroundPhase = 0; // 0の場合はランダム
+    public net.minecraft.world.phys.Vec3 ambushStartPos = null; // 特定の場所から強襲を開始するための座標保持用
 
     public HorrorSteveEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);

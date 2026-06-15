@@ -33,11 +33,29 @@ public class TemplateModClient implements ClientModInitializer {
             });
         });
 
-        // 毎ティック、シェイクの残り時間を減らす処理
+        // Red Night の霧パケット受信登録
+        ClientPlayNetworking.registerGlobalReceiver(com.example.TemplateMod.RED_NIGHT_PACKET, (client, handler, buf, responseSender) -> {
+            boolean active = buf.readBoolean();
+            client.execute(() -> {
+                FogManager.isFogActive = active;
+            });
+        });
+
+        // 毎ティック、シェイクの残り時間を減らす処理や霧の処理
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (!client.isPaused()) {
                 CameraShakeHandler.tick();
+                FogManager.tick(client);
             }
+        });
+        // /testfog コマンドの登録
+        net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            dispatcher.register(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("testfog")
+                .executes(context -> {
+                    FogManager.isFogActive = !FogManager.isFogActive;
+                    context.getSource().sendFeedback(net.minecraft.network.chat.Component.literal("Fog is now: " + FogManager.isFogActive));
+                    return 1;
+                }));
         });
     }
 }

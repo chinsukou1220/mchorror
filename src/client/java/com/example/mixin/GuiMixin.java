@@ -13,6 +13,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Gui.class)
 public abstract class GuiMixin {
 
+    @Inject(method = "render", at = @At("HEAD"))
+    private void renderRedFilter(GuiGraphics guiGraphics, float partialTick, CallbackInfo ci) {
+        if (com.example.client.FogManager.fadeProgress > 0.0f) {
+            Minecraft mc = Minecraft.getInstance();
+            int screenWidth = mc.getWindow().getGuiScaledWidth();
+            int screenHeight = mc.getWindow().getGuiScaledHeight();
+            
+            // 最大アルファ値は 0x55 (約33%)。fadeProgress に応じて0〜0x55に変化
+            int maxAlpha = 0x55;
+            int currentAlpha = (int)(maxAlpha * com.example.client.FogManager.fadeProgress);
+            
+            // 色コード組み立て: (Alpha << 24) | (Red << 16) | (Green << 8) | Blue
+            int color = (currentAlpha << 24) | (0xFF << 16) | (0x00 << 8) | 0x00;
+            
+            guiGraphics.fill(0, 0, screenWidth, screenHeight, color);
+        }
+    }
+
     private static final RandomSource RANDOM = RandomSource.create();
 
     @Inject(method = "render", at = @At("TAIL"))

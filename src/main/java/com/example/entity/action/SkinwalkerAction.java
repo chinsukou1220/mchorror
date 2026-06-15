@@ -22,8 +22,8 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
     private int ticksActive = 0;
 
     public SkinwalkerAction() {
-        // デフォルトは60ティック(3秒)で強制終了してしまうため、1200ティック(60秒)に延長
-        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 1200);
+        // デフォルトは60ティック(3秒)で強制終了してしまうため、400ティック(20秒)に延長
+        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 400);
     }
 
     @Override
@@ -42,8 +42,8 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
         this.targetPlayer = optionalPlayers.get().get(0);
         this.ticksActive = 0;
 
-        // ランダムなモブを選択
-        EntityType<?>[] types = {EntityType.ZOMBIE, EntityType.VILLAGER, EntityType.PIG, EntityType.COW, EntityType.SHEEP};
+        // ランダムなモブを選択（スティーブ自身の姿と、動物たち）
+        EntityType<?>[] types = {com.example.TemplateMod.HORROR_STEVE, EntityType.PIG, EntityType.COW, EntityType.SHEEP};
         EntityType<?> selectedType = types[level.random.nextInt(types.length)];
 
         // プレイヤーの視線の先（前方15〜20ブロック）の座標を計算
@@ -86,13 +86,15 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
             return false;
         }
         
-        // もしダミーが攻撃されたら即座に終了（ダメージを受けてhurtTimeが0より大きい時）
+        // もしダミーが攻撃されたら即座に終了し、CAVE_AMBUSHを強制発動する
         if (this.dummyMob.hurtTime > 0) {
+            owner.ambushStartPos = this.dummyMob.position();
+            owner.forcedDebugAction = com.example.entity.action.ActionController.ActionType.CAVE_AMBUSH;
             return false;
         }
 
-        // タイムアウト（約60秒 = 1200ティック）
-        if (this.ticksActive > 1200) {
+        // タイムアウト（20秒 = 400ティック）
+        if (this.ticksActive > 400) {
             return false;
         }
 
@@ -106,14 +108,8 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
         if (this.dummyMob != null && this.targetPlayer != null) {
             // ダミーのAIを上書きして強制的にプレイヤーへ向かわせる
             this.dummyMob.getNavigation().moveTo(this.targetPlayer, 1.0D);
-
-            double dist = this.dummyMob.distanceTo(this.targetPlayer);
             
-            // 3ブロック以内に近づいたらダメージを与えて消滅
-            if (dist < 3.0D) {
-                this.targetPlayer.hurt(level.damageSources().mobAttack(this.dummyMob), 5.0F); // 5ダメージ
-                this.finishAction(owner, level); // 内部で dummyMob を削除
-            }
+            // 近くまできたら消える処理は削除され、ただ歩き続けます
         }
     }
 
