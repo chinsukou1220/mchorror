@@ -39,7 +39,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         DROP,
         HUNT,
         DUPLICATE,
-        SKINWALKER
+        SKINWALKER,
+        SKIN_DEBUG
     }
     
     // 呼び出すための具体的なアクションを保持しておく
@@ -61,6 +62,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
     private final HuntAction huntAction = new HuntAction();
     private final DuplicateAction duplicateAction = new DuplicateAction();
     private final SkinwalkerAction skinwalkerAction = new SkinwalkerAction();
+    private final SkinDebugAction skinDebugAction = new SkinDebugAction();
     
     // 次に実行するアクションの種類
     private ActionType currentAction = ActionType.NONE;
@@ -404,6 +406,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             this.duplicateAction.tryStart(level, owner, gameTime);
         } else if (this.currentAction == ActionType.SKINWALKER) {
             this.skinwalkerAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.SKIN_DEBUG) {
+            this.skinDebugAction.tryStart(level, owner, gameTime);
         }
         this.currentAction = ActionType.NONE; // リセット
     }
@@ -429,12 +433,14 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.huntAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.skinDebugAction.getStatus() == Behavior.Status.RUNNING) return true;
         
         return owner.isActionActive;
     }
 
     @Override
     protected void tick(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+
         // サブアクションが実行中(RUNNING)の場合のみtickOrStopを呼ぶ
         // これにより、isActionActiveがfalseになった次のtickで適切にdoStopが呼ばれ、ステータスがSTOPPEDに戻る
         if (this.warpBehavior.getStatus() == Behavior.Status.RUNNING) this.warpBehavior.tickOrStop(level, owner, gameTime);
@@ -455,6 +461,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.huntAction.getStatus() == Behavior.Status.RUNNING) this.huntAction.tickOrStop(level, owner, gameTime);
         if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) this.duplicateAction.tickOrStop(level, owner, gameTime);
         if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) this.skinwalkerAction.tickOrStop(level, owner, gameTime);
+        if (this.skinDebugAction.getStatus() == Behavior.Status.RUNNING) this.skinDebugAction.tickOrStop(level, owner, gameTime);
     }
 
     @Override

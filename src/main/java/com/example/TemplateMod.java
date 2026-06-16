@@ -42,7 +42,7 @@ public class TemplateMod implements ModInitializer {
 			BuiltInRegistries.ENTITY_TYPE,
 			new ResourceLocation(MOD_ID, "horror_steve"),
 			FabricEntityTypeBuilder.create(MobCategory.MISC, com.example.entity.HorrorSteveEntity::new)
-					.dimensions(EntityDimensions.fixed(0.6F, 1.8F)) // Standard Player dimensions
+					.dimensions(EntityDimensions.fixed(1.2F, 3.6F)) // 2x Standard Player dimensions (2/3 of previous)
 					.build()
 	);
 
@@ -90,6 +90,7 @@ public class TemplateMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Hello Fabric world!");
+
 
 		// Initialize First Action (10-minute event)
 		FirstActionManager.init();

@@ -101,6 +101,9 @@ public class HorrorSteveAi {
         ) {
             @Override
             protected boolean checkExtraStartConditions(ServerLevel level, HorrorSteveEntity owner) {
+                // アクション実行中（SkinDebug等）はストーカー行動（接近と見つめる処理）を停止
+                if (owner.isActionActive) return false;
+                
                 // センサーが捉えたプレイヤーが1人以上いるか確認
                 Optional<List<Player>> players = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS);
                 return players.isPresent() && !players.get().isEmpty();
@@ -110,7 +113,7 @@ public class HorrorSteveAi {
             protected void start(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
                 // 一番近くにいるプレイヤーを取得
                 Player target = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS).get().get(0);
-                //owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, 0.6f, 2));
+                owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, 0.6f, 2));
                 // プレイヤーをじっと見つめる
                 owner.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
             }
@@ -152,6 +155,33 @@ public class HorrorSteveAi {
                     // --- 突進攻撃モードの処理 ---
                     if (owner.isChargingToAttack) {
                         owner.chargeTicks++;
+                        
+                        // 殴った後のディレイ（0.5秒 = 10ティック）
+                        if (owner.postHitWaitTicks > 0) {
+                            owner.postHitWaitTicks++;
+                            
+                            if (owner.postHitWaitTicks >= 10) {
+                                // 0.5秒後に強制透明化してワープ
+                                owner.setInvisible(true);
+                                owner.isAggressiveStalking = false;
+                                owner.isActionActive = false; // アクション終了
+                                owner.isChargingToAttack = false;
+                                owner.chargeTicks = 0;
+                                owner.postHitWaitTicks = 0;
+                                
+                                owner.hasBeenSeenSinceWarp = false;
+                                double ang = level.random.nextDouble() * Math.PI * 2;
+                                double dist = 80.0 + level.random.nextDouble() * 40.0;
+                                double fx = target.getX() + Math.cos(ang) * dist;
+                                double fz = target.getZ() + Math.sin(ang) * dist;
+                                double fy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int)fx, (int)fz);
+                                owner.teleportTo(fx, fy, fz);
+                                owner.isWaitingForWarp = true;
+                                owner.lastWarpTime = level.getGameTime();
+                            }
+                            return; // 硬直中は他の処理をスキップ
+                        }
+                        
                         owner.getNavigation().moveTo(target, 20.0); // 超高速でプレイヤーに向かう
                         owner.getLookControl().setLookAt(target, 45.0F, 90.0F);
                         
@@ -159,14 +189,26 @@ public class HorrorSteveAi {
                         if (owner.distanceTo(target) <= 2.5 || owner.chargeTicks >= 40) {
                             if (owner.distanceTo(target) <= 4.0) {
                                 owner.doHurtTarget(target); // 一発殴る
+                                // 殴れた場合は硬直フェーズへ移行（すぐには消えない）
+                                owner.postHitWaitTicks = 1;
+                            } else {
+                                // タイムアウト等で殴れなかった場合は即座に消滅
+                                owner.setInvisible(true);
+                                owner.isAggressiveStalking = false;
+                                owner.isActionActive = false; // アクション終了
+                                owner.isChargingToAttack = false;
+                                owner.chargeTicks = 0;
+                                
+                                owner.hasBeenSeenSinceWarp = false;
+                                double ang = level.random.nextDouble() * Math.PI * 2;
+                                double dist = 80.0 + level.random.nextDouble() * 40.0;
+                                double fx = target.getX() + Math.cos(ang) * dist;
+                                double fz = target.getZ() + Math.sin(ang) * dist;
+                                double fy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int)fx, (int)fz);
+                                owner.teleportTo(fx, fy, fz);
+                                owner.isWaitingForWarp = true;
+                                owner.lastWarpTime = level.getGameTime();
                             }
-                            owner.isChargingToAttack = false;
-                            owner.chargeTicks = 0;
-                            
-                            // その後、即座に透明化＆ワープ逃走モードへ移行
-                            owner.hasBeenSeenSinceWarp = true;
-                            owner.timeWhenSeen = level.getGameTime() - 10;
-                            owner.isActionActive = true;
                         }
                         return; // 突進中は通常の視線判定や逃走処理をスキップ
                     }
@@ -187,18 +229,15 @@ public class HorrorSteveAi {
                         double thresholdDot;
                         int thresholdTicks;
                         
-                        if (distanceToPlayer <= 5.0) {
-                            thresholdDot = 0.0; // 視界に入った瞬間に見つかったと判定
+                        if (distanceToPlayer <= 15.0) {
+                            thresholdDot = 0.0; // 15ブロック以内なら、画面に一瞬でも入っただけでアウト
                             thresholdTicks = 0;
-                        } else if (distanceToPlayer <= 10.0) {
-                            thresholdDot = 0.2; // 以前よりかなり緩め
-                            thresholdTicks = 0; // すぐに判定
-                        } else if (distanceToPlayer >= 20.0) {
-                            thresholdDot = 0.8; // 遠くても少し画面の端に入れば判定されやすい
-                            thresholdTicks = 10; // 以前の1秒から0.5秒に短縮
+                        } else if (distanceToPlayer >= 30.0) {
+                            thresholdDot = 0.4; // 30ブロック以上の超遠距離でも、画面の端の方に捉えれば一瞬でアウト
+                            thresholdTicks = 0;
                         } else {
-                            thresholdDot = 0.6; // 10~20ブロックの中距離もかなり緩め
-                            thresholdTicks = 10; // 0.5秒
+                            thresholdDot = 0.2; // 15〜30ブロックの中〜遠距離でもかなり緩く一瞬でアウト
+                            thresholdTicks = 0;
                         }
                         
                         // 基準以上なら画面に捉えたと判定

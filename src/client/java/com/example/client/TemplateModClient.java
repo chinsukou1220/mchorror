@@ -6,14 +6,14 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 public class TemplateModClient implements ClientModInitializer {
-
     @Override
     public void onInitializeClient() {
-        // エンティティレンダラーの登録（上書きで消えていた処理を復旧）
+        // エンティティレンダラーの登録（専用OBJレンダラー）
         net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(
             com.example.TemplateMod.HORROR_STEVE, 
-            com.example.client.renderer.HorrorSteveRenderer::new
+            com.example.client.HorrorSteveObjRenderer::new
         );
+
 
         // ゴーストブロックの透過描画設定
         net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap.INSTANCE.putBlock(

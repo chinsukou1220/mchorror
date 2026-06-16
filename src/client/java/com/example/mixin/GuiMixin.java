@@ -20,8 +20,8 @@ public abstract class GuiMixin {
             int screenWidth = mc.getWindow().getGuiScaledWidth();
             int screenHeight = mc.getWindow().getGuiScaledHeight();
             
-            // 最大アルファ値は 0x55 (約33%)。fadeProgress に応じて0〜0x55に変化
-            int maxAlpha = 0x55;
+            // 最大アルファ値は 0x33 (約20%)。fadeProgress に応じて0〜0x33に変化
+            int maxAlpha = 0x33;
             int currentAlpha = (int)(maxAlpha * com.example.client.FogManager.fadeProgress);
             
             // 色コード組み立て: (Alpha << 24) | (Red << 16) | (Green << 8) | Blue

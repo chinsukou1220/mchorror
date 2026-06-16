@@ -8,7 +8,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.AABB;
+
 import com.mojang.serialization.Dynamic;
+
+import java.util.List;
 
 public class HorrorSteveEntity extends PathfinderMob {
 
@@ -21,6 +25,7 @@ public class HorrorSteveEntity extends PathfinderMob {
     public boolean isActionActive = false;
     public boolean isAggressiveStalking = false; // 歩いて近づくモードかどうか
     public boolean isChargingToAttack = false; // 至近距離で見つかった際の突進攻撃モード
+    public int postHitWaitTicks = 0; // 殴った後の硬直時間カウンター
     public int chargeTicks = 0; // 突進にかかっている時間（スタック時のタイムアウト用）
     public boolean isWaitingForWarp = false; // ランダムワープ（次の出番）を待機している状態
     public int invisibleStuckTicks = 0; // 透明状態でのスタック検知用カウンター
@@ -40,6 +45,14 @@ public class HorrorSteveEntity extends PathfinderMob {
     public HorrorSteveEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
     }
+
+    @Override
+    public boolean startRiding(net.minecraft.world.entity.Entity vehicle, boolean force) {
+        // トロッコやボートなどに勝手に乗るのを防ぐ
+        return false;
+    }
+
+
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
@@ -113,6 +126,12 @@ public class HorrorSteveEntity extends PathfinderMob {
 
     @Override
     public boolean hurt(net.minecraft.world.damagesource.DamageSource source, float amount) {
+        // アクション中にプレイヤーから攻撃されたらアクションを解除（SkinDebugAction等の解除用）
+        if (this.isActionActive && source.getEntity() instanceof net.minecraft.world.entity.player.Player) {
+            this.isActionActive = false;
+            // 必要であれば少し離れた場所にワープして逃げる等の処理をここに追加できます
+        }
+
         // 奈落（/killコマンド等、無敵を貫通するダメージ）は許可
         if (source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return super.hurt(source, amount);

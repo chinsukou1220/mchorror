@@ -42,8 +42,11 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
         this.targetPlayer = optionalPlayers.get().get(0);
         this.ticksActive = 0;
 
-        // ランダムなモブを選択（スティーブ自身の姿と、動物たち）
-        EntityType<?>[] types = {com.example.TemplateMod.HORROR_STEVE, EntityType.PIG, EntityType.COW, EntityType.SHEEP};
+        // ランダムな動物や敵対モブに擬態する
+        EntityType<?>[] types = {
+            EntityType.PIG, EntityType.COW, EntityType.SHEEP,
+            EntityType.ZOMBIE, EntityType.SKELETON, EntityType.CREEPER
+        };
         EntityType<?> selectedType = types[level.random.nextInt(types.length)];
 
         // プレイヤーの視線の先（前方15〜20ブロック）の座標を計算
@@ -109,7 +112,22 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
             // ダミーのAIを上書きして強制的にプレイヤーへ向かわせる
             this.dummyMob.getNavigation().moveTo(this.targetPlayer, 1.0D);
             
-            // 近くまできたら消える処理は削除され、ただ歩き続けます
+            // ランダムで極端にピッチの低い（野太い）不気味な鳴き声を発する
+            if (this.ticksActive % 40 == 0 && level.random.nextInt(3) == 0) {
+                net.minecraft.sounds.SoundEvent sound = null;
+                if (this.dummyMob.getType() == EntityType.PIG) sound = net.minecraft.sounds.SoundEvents.PIG_AMBIENT;
+                else if (this.dummyMob.getType() == EntityType.COW) sound = net.minecraft.sounds.SoundEvents.COW_AMBIENT;
+                else if (this.dummyMob.getType() == EntityType.SHEEP) sound = net.minecraft.sounds.SoundEvents.SHEEP_AMBIENT;
+                else if (this.dummyMob.getType() == EntityType.ZOMBIE) sound = net.minecraft.sounds.SoundEvents.ZOMBIE_AMBIENT;
+                else if (this.dummyMob.getType() == EntityType.SKELETON) sound = net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT;
+                
+                if (sound != null) {
+                    // 通常のピッチ(1.0〜1.2等)を大きく外れた 0.4〜0.6 の極低音にする
+                    float pitch = 0.4f + level.random.nextFloat() * 0.2f;
+                    level.playSound(null, this.dummyMob.getX(), this.dummyMob.getY(), this.dummyMob.getZ(), 
+                            sound, net.minecraft.sounds.SoundSource.HOSTILE, 1.5f, pitch);
+                }
+            }
         }
     }
 
