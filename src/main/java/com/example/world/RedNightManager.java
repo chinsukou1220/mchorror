@@ -1,6 +1,6 @@
 package com.example.world;
 
-import com.example.TemplateMod;
+import com.example.SsttaallkkeerrMod;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
@@ -50,7 +50,7 @@ public class RedNightManager {
             // クライアントへ赤い霧をオンにするパケットを送信
             FriendlyByteBuf buf = PacketByteBufs.create();
             buf.writeBoolean(true);
-            ServerPlayNetworking.send(player, TemplateMod.RED_NIGHT_PACKET, buf);
+            ServerPlayNetworking.send(player, SsttaallkkeerrMod.RED_NIGHT_PACKET, buf);
         }
     }
 
@@ -61,7 +61,7 @@ public class RedNightManager {
             // クライアントへ赤い霧をオフにするパケットを送信
             FriendlyByteBuf buf = PacketByteBufs.create();
             buf.writeBoolean(false);
-            ServerPlayNetworking.send(player, TemplateMod.RED_NIGHT_PACKET, buf);
+            ServerPlayNetworking.send(player, SsttaallkkeerrMod.RED_NIGHT_PACKET, buf);
         }
     }
 }

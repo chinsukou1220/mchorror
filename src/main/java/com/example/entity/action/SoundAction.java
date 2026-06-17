@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.player.Player;
-import com.example.TemplateMod;
+import com.example.SsttaallkkeerrMod;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,17 @@ public class SoundAction extends Behavior<HorrorSteveEntity> {
             SoundEvents.ENDERMAN_STARE,
             SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH,
             SoundEvents.STONE_STEP,
-            TemplateMod.CREEPY_SOUND_1
+            SsttaallkkeerrMod.CREEPY_SOUND_1,
+            SsttaallkkeerrMod.HORROR_ACCENT_1,
+            SsttaallkkeerrMod.HORROR_ACCENT_2,
+            SsttaallkkeerrMod.HORROR_ACCENT_3,
+            SsttaallkkeerrMod.HORROR_ACCENT_4,
+            SsttaallkkeerrMod.HORROR_ACCENT_5,
+            SsttaallkkeerrMod.HORROR_ACCENT_6,
+            SsttaallkkeerrMod.HORROR_ACCENT_7,
+            SsttaallkkeerrMod.HORROR_ACCENT_8,
+            SsttaallkkeerrMod.HORROR_ACCENT_9,
+            SsttaallkkeerrMod.HORROR_ACCENT_10
         };
         SoundEvent selectedSound = sounds[rng.nextInt(sounds.length)];
         double angle = rng.nextDouble() * Math.PI * 2;
@@ -51,6 +61,22 @@ public class SoundAction extends Behavior<HorrorSteveEntity> {
         double y = target.getY() + 1.0;
         double z = target.getZ() + Math.sin(angle) * distance;
         level.playSound(null, x, y, z, selectedSound, SoundSource.HOSTILE, 1.0f, 1.0f);
+    }
+
+    /**
+     * ランダムなcompressed音（1〜10）を指定位置で鳴らす。
+     */
+    public static void playRandomCompressedSound(ServerLevel level, net.minecraft.core.BlockPos pos) {
+        Random rng = new Random();
+        SoundEvent[] sounds = {
+            SsttaallkkeerrMod.HORROR_ACCENT_1, SsttaallkkeerrMod.HORROR_ACCENT_2,
+            SsttaallkkeerrMod.HORROR_ACCENT_3, SsttaallkkeerrMod.HORROR_ACCENT_4,
+            SsttaallkkeerrMod.HORROR_ACCENT_5, SsttaallkkeerrMod.HORROR_ACCENT_6,
+            SsttaallkkeerrMod.HORROR_ACCENT_7, SsttaallkkeerrMod.HORROR_ACCENT_8,
+            SsttaallkkeerrMod.HORROR_ACCENT_9, SsttaallkkeerrMod.HORROR_ACCENT_10
+        };
+        SoundEvent selectedSound = sounds[rng.nextInt(sounds.length)];
+        level.playSound(null, pos, selectedSound, SoundSource.HOSTILE, 2.0f, 1.0f);
     }
 
     @Override

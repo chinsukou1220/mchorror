@@ -8,7 +8,8 @@ import net.minecraft.server.level.ServerPlayer;
 
 public class ModNetworking {
 
-    public static final ResourceLocation SHAKE_PACKET_ID = new ResourceLocation("template-mod", "camera_shake");
+    public static final ResourceLocation SHAKE_PACKET_ID = new ResourceLocation("ssttaallkkeerr", "camera_shake");
+    public static final ResourceLocation JUMPSCARE_PACKET_ID = new ResourceLocation("ssttaallkkeerr", "jumpscare");
 
     // サーバー側から特定のプレイヤーへ揺れパケットを送信するメソッド
     public static void sendShakeToPlayer(ServerPlayer player, int durationTicks, float intensity) {
@@ -17,5 +18,10 @@ public class ModNetworking {
         buf.writeFloat(intensity);
         
         ServerPlayNetworking.send(player, SHAKE_PACKET_ID, buf);
+    }
+
+    public static void sendJumpscareToPlayer(ServerPlayer player) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        ServerPlayNetworking.send(player, JUMPSCARE_PACKET_ID, buf);
     }
 }

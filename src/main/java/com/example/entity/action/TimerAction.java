@@ -136,13 +136,21 @@ public class TimerAction extends Behavior<HorrorSteveEntity> {
                 owner.setInvisible(false);
                 owner.setSilent(false);
                 
+                // 突撃の瞬間にOSOUTOKIと金切り声を同時に鳴らす
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.OSOUTOKI, net.minecraft.sounds.SoundSource.HOSTILE, 1.4F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+                
                 // 崖登り用のステップ設定（ブロック破壊しながら進むため）
                 owner.setMaxUpStep(10.0f);
-                
-                // TODO: ここに今後追加する効果音（出現時の音など）を入れる
-                // level.playSound(null, owner.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 2.0f, 0.5f);
             }
         } else if (this.phase == 2) {
+            // フェーズ2に入ってからの経過時間でループ再生を管理
+            int phase2Ticks = this.tickCount - this.realTriggerTicks;
+            if (phase2Ticks > 0 && phase2Ticks % 30 == 0) {
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+            }
             // アクションバーの「0 seconds」を赤文字で震えさせる演出
             String jitterSpaces = level.random.nextBoolean() ? " " : (level.random.nextBoolean() ? "  " : "");
             String jitterPrefix = level.random.nextBoolean() ? "§k||§r " : "";
@@ -202,7 +210,7 @@ public class TimerAction extends Behavior<HorrorSteveEntity> {
             BlockState belowState = level.getBlockState(belowPos);
             if (belowState.isAir() || !belowState.getFluidState().isEmpty() || belowState.canBeReplaced()) {
                 // ゴーストブロック（専用の黒い足場）を設置
-                level.setBlock(belowPos, com.example.TemplateMod.GHOST_BLOCK.defaultBlockState(), 3);
+                level.setBlock(belowPos, com.example.SsttaallkkeerrMod.GHOST_BLOCK.defaultBlockState(), 3);
             }
 
             if (brokeSomething && this.tickCount % 5 == 0) {
@@ -221,8 +229,11 @@ public class TimerAction extends Behavior<HorrorSteveEntity> {
         // アクション終了時にエフェクトと画面揺れを強制的に終わらせる
         if (this.targetPlayer != null) {
             this.targetPlayer.removeEffect(net.minecraft.world.effect.MobEffects.DARKNESS);
-            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
-                com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 0, 0.0f);
+            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.example.network.ModNetworking.sendShakeToPlayer(sp, 0, 0.0f);
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
             }
         }
         
@@ -250,8 +261,11 @@ public class TimerAction extends Behavior<HorrorSteveEntity> {
         owner.setNoGravity(false);
         if (this.targetPlayer != null) {
             this.targetPlayer.removeEffect(net.minecraft.world.effect.MobEffects.DARKNESS);
-            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
-                com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 0, 0.0f);
+            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.example.network.ModNetworking.sendShakeToPlayer(sp, 0, 0.0f);
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
             }
         }
         owner.isActionActive = false;

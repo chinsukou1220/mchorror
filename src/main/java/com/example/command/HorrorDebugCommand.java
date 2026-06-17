@@ -25,6 +25,25 @@ public class HorrorDebugCommand {
                 )
             )
         );
+
+        dispatcher.register(Commands.literal("stevestage")
+            .requires(source -> source.hasPermission(2))
+            .then(Commands.argument("stage", IntegerArgumentType.integer(0, 6))
+                .executes(context -> {
+                    int stage = IntegerArgumentType.getInteger(context, "stage");
+                    ServerLevel level = context.getSource().getLevel();
+                    List<HorrorSteveEntity> steves = level.getEntitiesOfClass(HorrorSteveEntity.class, new AABB(context.getSource().getPosition(), context.getSource().getPosition()).inflate(100000.0));
+                    if (steves.isEmpty()) {
+                        context.getSource().sendFailure(Component.literal("No Horror Steve found."));
+                        return 0;
+                    }
+                    HorrorSteveEntity steve = steves.get(0);
+                    steve.getEntityData().set(HorrorSteveEntity.DATA_TOTAL_ALIVE_TICKS_ID, stage * 3000);
+                    context.getSource().sendSuccess(() -> Component.literal("Set Steve stage to " + stage + " (skin: steve" + (stage + 1) + ".png)"), true);
+                    return 1;
+                })
+            )
+        );
     }
 
     private static int executeCommand(CommandContext<CommandSourceStack> context, String actionStr, int phase) {

@@ -1,0 +1,127 @@
+{
+  "kanakirigoe": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.kanakirigoe",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:kanakirigoe"
+      }
+    ]
+  },
+  "osoutoki": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.osoutoki",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:osoutoki"
+      }
+    ]
+  },
+  "wqwqwqq": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.wqwqwqq",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:wqwqwqq"
+      }
+    ]
+  },
+  "horror_accent_1": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_1",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_1"
+      }
+    ]
+  },
+  "horror_accent_2": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_2",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_2"
+      }
+    ]
+  },
+  "horror_accent_3": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_3",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_3"
+      }
+    ]
+  },
+  "horror_accent_4": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_4",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_4"
+      }
+    ]
+  },
+  "horror_accent_5": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_5",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_5"
+      }
+    ]
+  },
+  "horror_accent_6": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_6",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_6"
+      }
+    ]
+  },
+  "horror_accent_7": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_7",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_7"
+      }
+    ]
+  },
+  "horror_accent_8": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_8",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_8"
+      }
+    ]
+  },
+  "horror_accent_9": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_9",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_9"
+      }
+    ]
+  },
+  "horror_accent_10": {
+    "category": "hostile",
+    "subtitle": "ssttaallkkeerr.subtitle.horror_accent_10",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:horror_accent_10"
+      }
+    ]
+  },
+  "beep": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:beep"
+      }
+    ]
+  }
+}

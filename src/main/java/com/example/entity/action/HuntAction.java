@@ -42,6 +42,7 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
             Player target = optionalPlayers.get().get(0);
 
             owner.isActionActive = true;
+            com.example.entity.action.SoundAction.playRandomCompressedSound(level, target.blockPosition());
             this.tickCount = 0;
             this.targetPlayer = target;
             this.phase = 1;
@@ -99,6 +100,12 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
                 owner.setInvisible(false);
                 owner.setSilent(false);
                 owner.setNoGravity(false); // ★重力を戻す（start()でtrueにしたまま忘れていた致命的バグ修正）
+                
+                // 突撃の瞬間に同時に鳴らす
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.OSOUTOKI, net.minecraft.sounds.SoundSource.HOSTILE, 1.4F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+                
                 owner.setMaxUpStep(10.0f);
                 
                 // プレイヤーの背後から迫る
@@ -128,6 +135,12 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
                 this.wanderTargetZ = owner.getZ();
             }
         } else if (this.phase == 2) {
+            // フェーズ2の開始時からの経過時間で管理（HuntActionは200ティック目でフェーズ2へ移行）
+            int phase2Ticks = this.tickCount - 200;
+            if (phase2Ticks > 0 && phase2Ticks % 30 == 0) {
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+            }
             // === 1秒（20ティック）ごとにランダムなサブアクション（怪奇現象）を発生 ===
             if (this.tickCount % 20 == 0) {
                 int rand = level.random.nextInt(6);
@@ -238,7 +251,7 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
             BlockPos belowPos = currentPos.below();
             BlockState belowState = level.getBlockState(belowPos);
             if (belowState.isAir() || !belowState.getFluidState().isEmpty() || belowState.canBeReplaced()) {
-                level.setBlock(belowPos, com.example.TemplateMod.GHOST_BLOCK.defaultBlockState(), 3);
+                level.setBlock(belowPos, com.example.SsttaallkkeerrMod.GHOST_BLOCK.defaultBlockState(), 3);
             }
         }
     }
@@ -251,11 +264,12 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
         
         if (this.targetPlayer != null) {
             this.targetPlayer.removeEffect(net.minecraft.world.effect.MobEffects.DARKNESS);
-            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
-                com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 0, 0.0f);
-                ((net.minecraft.server.level.ServerPlayer) this.targetPlayer).connection.send(
-                    new ClientboundSetTitleTextPacket(Component.literal(""))
-                );
+            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.example.network.ModNetworking.sendShakeToPlayer(sp, 0, 0.0f);
+                sp.connection.send(new ClientboundSetTitleTextPacket(Component.literal("")));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
             }
         }
         
@@ -282,11 +296,12 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
         owner.setNoGravity(false);
         if (this.targetPlayer != null) {
             this.targetPlayer.removeEffect(net.minecraft.world.effect.MobEffects.DARKNESS);
-            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
-                com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 0, 0.0f);
-                ((net.minecraft.server.level.ServerPlayer) this.targetPlayer).connection.send(
-                    new ClientboundSetTitleTextPacket(Component.literal(""))
-                );
+            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.example.network.ModNetworking.sendShakeToPlayer(sp, 0, 0.0f);
+                sp.connection.send(new ClientboundSetTitleTextPacket(Component.literal("")));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
             }
         }
         owner.isActionActive = false;

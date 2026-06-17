@@ -56,7 +56,7 @@ public class FirstActionManager {
     }
     
     private static void spawnHorrorSteve(ServerLevel level, ServerPlayer player) {
-        HorrorSteveEntity steve = TemplateMod.HORROR_STEVE.create(level);
+        HorrorSteveEntity steve = SsttaallkkeerrMod.HORROR_STEVE.create(level);
         if (steve != null) {
             // ランダムな方向の 30〜40 ブロック先
             double angle = random.nextDouble() * Math.PI * 2;

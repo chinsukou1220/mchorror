@@ -102,6 +102,8 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
             // 視線が通ったらチャージフェーズへ移行
             if (owner.getSensing().hasLineOfSight(this.targetPlayer)) {
                 this.phase = 2;
+                owner.setPose(net.minecraft.world.entity.Pose.SWIMMING);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.OSOUTOKI, net.minecraft.sounds.SoundSource.HOSTILE, 1.4F, 1.0F);
                 // 段差乗り越え高さを10ブロックに設定（崖も駆け上がれるように）
                 owner.setMaxUpStep(10.0f);
                 // 移動速度上昇レベル10 (アンプリファイア9) を10秒間付与
@@ -147,6 +149,11 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
             }
             
         } else if (this.phase == 2) { // 突撃フェーズ（ブロックを破壊しながら突進）
+            // 音のループ再生
+            if (this.chargeTimer % 30 == 0) {
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+            }
             this.chargeTimer++;
             
             // プレイヤーに向かって猛スピードでナビゲーション
@@ -190,9 +197,12 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
         // アクション終了時にプレイヤーのエフェクトと揺れを解除する
         if (this.targetPlayer != null) {
             this.targetPlayer.removeEffect(MobEffects.DARKNESS);
-            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
+            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer sp) {
                 // 強度と時間を0にして送信し、強制的に揺れをストップさせる
-                com.example.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 0, 0.0f);
+                com.example.network.ModNetworking.sendShakeToPlayer(sp, 0, 0.0f);
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
             }
         }
 

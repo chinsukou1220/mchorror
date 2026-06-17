@@ -40,7 +40,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         HUNT,
         DUPLICATE,
         SKINWALKER,
-        SKIN_DEBUG
+        SKIN_DEBUG,
+        DISPLAY
     }
     
     // 呼び出すための具体的なアクションを保持しておく
@@ -63,6 +64,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
     private final DuplicateAction duplicateAction = new DuplicateAction();
     private final SkinwalkerAction skinwalkerAction = new SkinwalkerAction();
     private final SkinDebugAction skinDebugAction = new SkinDebugAction();
+    private final DisplayAction displayAction = new DisplayAction();
     
     // 次に実行するアクションの種類
     private ActionType currentAction = ActionType.NONE;
@@ -250,17 +252,18 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     isUnderground = com.example.util.UndergroundDetector.isPlayerUnderground(level, players.get().get(0));
                 }
                 
-                // 全環境共通（どこでも発生する）壁掘り強襲アクション (CAVE_AMBUSH)
-                // 確率: 約1000秒(16分)に1回程度 (0.00005)
-                if (Math.random() < 0.00005 * multiplier) {
-                    this.currentAction = ActionType.CAVE_AMBUSH;
-                    return true;
-                }
-                
+
                 if (isUnderground || isNether) {
                     // ==========================================
                     // 洞窟（地下）・ネザー専用アクション
                     // ==========================================
+                    
+                    // 壁掘り強襲アクション (CAVE_AMBUSH)
+                    // 確率: 約1000秒(16分)に1回程度 (0.00005)
+                    if (Math.random() < 0.00005 * multiplier) {
+                        this.currentAction = ActionType.CAVE_AMBUSH;
+                        return true;
+                    }
                     
                     // 【新規】透明で近づき足音だけ残して去り、遠くで見つめるアクション（洞窟・ネザー限定）
                     // 確率: 約250秒(4分)に1回程度 (0.0002)
@@ -353,6 +356,12 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         return true;
                     }
                     
+                    // 画面に顔がバンッと出るジャンプスケアアクション (非常に低確率: 0.00001)
+                    if (Math.random() < 0.00001 * multiplier) {
+                        this.currentAction = ActionType.DISPLAY;
+                        return true;
+                    }
+                    
                     // 視界外にいる特定のモブ（村人、猫、犬、イリジャーなど）を殺害するアクション
                     if (Math.random() < 0.0005 * multiplier) {
                         this.currentAction = ActionType.KILLING_MOB;
@@ -408,6 +417,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             this.skinwalkerAction.tryStart(level, owner, gameTime);
         } else if (this.currentAction == ActionType.SKIN_DEBUG) {
             this.skinDebugAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.DISPLAY) {
+            this.displayAction.tryStart(level, owner, gameTime);
         }
         this.currentAction = ActionType.NONE; // リセット
     }
@@ -434,6 +445,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.skinDebugAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.displayAction.getStatus() == Behavior.Status.RUNNING) return true;
         
         return owner.isActionActive;
     }
@@ -462,6 +474,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) this.duplicateAction.tickOrStop(level, owner, gameTime);
         if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) this.skinwalkerAction.tickOrStop(level, owner, gameTime);
         if (this.skinDebugAction.getStatus() == Behavior.Status.RUNNING) this.skinDebugAction.tickOrStop(level, owner, gameTime);
+        if (this.displayAction.getStatus() == Behavior.Status.RUNNING) this.displayAction.tickOrStop(level, owner, gameTime);
     }
 
     @Override
@@ -488,6 +501,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.huntAction.getStatus() == Behavior.Status.RUNNING) this.huntAction.doStop(level, owner, gameTime);
         if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) this.duplicateAction.doStop(level, owner, gameTime);
         if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) this.skinwalkerAction.doStop(level, owner, gameTime);
+        if (this.displayAction.getStatus() == Behavior.Status.RUNNING) this.displayAction.doStop(level, owner, gameTime);
 
         // 状態を完全にリセット
         owner.isActionActive = false;

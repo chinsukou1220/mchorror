@@ -15,8 +15,8 @@ import net.minecraft.util.Mth;
 
 public class HorrorSteveObjRenderer extends EntityRenderer<HorrorSteveEntity> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation("template-mod", "textures/entity/horror_steve.png");
-    private static final ResourceLocation MODEL_OBJ = new ResourceLocation("template-mod", "models/horror_steve_5.obj");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("ssttaallkkeerr", "textures/entity/horror_steve.png");
+    private static final ResourceLocation MODEL_OBJ = new ResourceLocation("ssttaallkkeerr", "models/horror_steve_5.obj");
 
     private ObjModelLoader.ObjModel model;
 

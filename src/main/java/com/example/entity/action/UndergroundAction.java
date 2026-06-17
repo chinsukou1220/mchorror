@@ -44,6 +44,7 @@ public class UndergroundAction extends Behavior<HorrorSteveEntity> {
 
             if (UndergroundDetector.isPlayerUnderground(level, target)) {
                 owner.isActionActive = true;
+                com.example.entity.action.SoundAction.playRandomCompressedSound(level, target.blockPosition());
                 this.tickCount = 0;
                 this.targetPlayer = target;
                 this.torchPositions.clear();

@@ -32,8 +32,8 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import com.example.command.HorrorDebugCommand;
 import com.example.item.HorrorDebugItem;
 
-public class TemplateMod implements ModInitializer {
-	public static final String MOD_ID = "template-mod";
+public class SsttaallkkeerrMod implements ModInitializer {
+	public static final String MOD_ID = "ssttaallkkeerr";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final ResourceLocation RED_NIGHT_PACKET = new ResourceLocation(MOD_ID, "red_night");
 
@@ -67,12 +67,42 @@ public class TemplateMod implements ModInitializer {
 			new HorrorDebugItem(new Item.Properties().stacksTo(1))
 	);
 
-	// Register Custom Sound (for future custom audio files)
+	// Register Custom Sounds
 	public static final SoundEvent CREEPY_SOUND_1 = Registry.register(
 			BuiltInRegistries.SOUND_EVENT,
 			new ResourceLocation(MOD_ID, "creepy_sound_1"),
 			SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "creepy_sound_1"))
 	);
+	public static final SoundEvent KANAKIRIGOE = Registry.register(
+			BuiltInRegistries.SOUND_EVENT,
+			new ResourceLocation(MOD_ID, "kanakirigoe"),
+			SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "kanakirigoe"))
+	);
+	public static final SoundEvent OSOUTOKI = Registry.register(
+			BuiltInRegistries.SOUND_EVENT,
+			new ResourceLocation(MOD_ID, "osoutoki"),
+			SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "osoutoki"))
+	);
+	public static final SoundEvent WQWQWQQ = Registry.register(
+			BuiltInRegistries.SOUND_EVENT,
+			new ResourceLocation(MOD_ID, "wqwqwqq"),
+			SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "wqwqwqq"))
+	);
+	public static final SoundEvent BEEP = Registry.register(
+			BuiltInRegistries.SOUND_EVENT,
+			new ResourceLocation(MOD_ID, "beep"),
+			SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "beep"))
+	);
+	public static final SoundEvent HORROR_ACCENT_1 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_1"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_1")));
+	public static final SoundEvent HORROR_ACCENT_2 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_2"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_2")));
+	public static final SoundEvent HORROR_ACCENT_3 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_3"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_3")));
+	public static final SoundEvent HORROR_ACCENT_4 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_4"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_4")));
+	public static final SoundEvent HORROR_ACCENT_5 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_5"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_5")));
+	public static final SoundEvent HORROR_ACCENT_6 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_6"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_6")));
+	public static final SoundEvent HORROR_ACCENT_7 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_7"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_7")));
+	public static final SoundEvent HORROR_ACCENT_8 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_8"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_8")));
+	public static final SoundEvent HORROR_ACCENT_9 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_9"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_9")));
+	public static final SoundEvent HORROR_ACCENT_10 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_10"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_10")));
 
 	// Register Ghost Block
 	public static final Block GHOST_BLOCK = Registry.register(

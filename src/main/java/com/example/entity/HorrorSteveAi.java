@@ -30,14 +30,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.List;
 import java.util.Set;
-import com.example.TemplateMod;
+import com.example.SsttaallkkeerrMod;
 import com.example.util.StalkerLocationCalculator;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 
 public class HorrorSteveAi {
     protected static final ImmutableList<? extends SensorType<? extends Sensor<? super HorrorSteveEntity>>> SENSOR_TYPES = ImmutableList.of(
-            TemplateMod.GLOBAL_PLAYER_SENSOR,
+            SsttaallkkeerrMod.GLOBAL_PLAYER_SENSOR,
             SensorType.NEAREST_LIVING_ENTITIES
     );
 
@@ -162,10 +162,17 @@ public class HorrorSteveAi {
                             
                             if (owner.postHitWaitTicks >= 10) {
                                 // 0.5秒後に強制透明化してワープ
+                                if (target instanceof net.minecraft.server.level.ServerPlayer sp) {
+                                    sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                                    sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                                    sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                                }
                                 owner.setInvisible(true);
                                 owner.isAggressiveStalking = false;
                                 owner.isActionActive = false; // アクション終了
                                 owner.isChargingToAttack = false;
+                                owner.setAggressive(false);
+                                owner.setPose(net.minecraft.world.entity.Pose.STANDING);
                                 owner.chargeTicks = 0;
                                 owner.postHitWaitTicks = 0;
                                 
@@ -182,6 +189,12 @@ public class HorrorSteveAi {
                             return; // 硬直中は他の処理をスキップ
                         }
                         
+                        // 音をループ再生
+                        if (owner.chargeTicks % 30 == 0) {
+                            level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
+                            level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+                        }
+                        
                         owner.getNavigation().moveTo(target, 20.0); // 超高速でプレイヤーに向かう
                         owner.getLookControl().setLookAt(target, 45.0F, 90.0F);
                         
@@ -193,10 +206,17 @@ public class HorrorSteveAi {
                                 owner.postHitWaitTicks = 1;
                             } else {
                                 // タイムアウト等で殴れなかった場合は即座に消滅
+                                if (target instanceof net.minecraft.server.level.ServerPlayer sp) {
+                                    sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                                    sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                                    sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                                }
                                 owner.setInvisible(true);
                                 owner.isAggressiveStalking = false;
                                 owner.isActionActive = false; // アクション終了
                                 owner.isChargingToAttack = false;
+                                owner.setAggressive(false);
+                                owner.setPose(net.minecraft.world.entity.Pose.STANDING);
                                 owner.chargeTicks = 0;
                                 
                                 owner.hasBeenSeenSinceWarp = false;
@@ -226,18 +246,21 @@ public class HorrorSteveAi {
                         double dotProduct = viewVector.dot(vectorToEntity);
                         
                         // 距離に応じて判定基準を変更
+                        // 5ブロック以下：0.1（画面端） / 0秒(0ティック)
+                        // 20ブロック以下：0.3 / 0.1秒(2ティック)
+                        // 20ブロック超：0.8 / 1秒(20ティック)
                         double thresholdDot;
                         int thresholdTicks;
                         
-                        if (distanceToPlayer <= 15.0) {
-                            thresholdDot = 0.0; // 15ブロック以内なら、画面に一瞬でも入っただけでアウト
+                        if (distanceToPlayer <= 5.0) {
+                            thresholdDot = 0.1;
                             thresholdTicks = 0;
-                        } else if (distanceToPlayer >= 30.0) {
-                            thresholdDot = 0.4; // 30ブロック以上の超遠距離でも、画面の端の方に捉えれば一瞬でアウト
-                            thresholdTicks = 0;
+                        } else if (distanceToPlayer <= 20.0) {
+                            thresholdDot = 0.3;
+                            thresholdTicks = 2;
                         } else {
-                            thresholdDot = 0.2; // 15〜30ブロックの中〜遠距離でもかなり緩く一瞬でアウト
-                            thresholdTicks = 0;
+                            thresholdDot = 0.8;
+                            thresholdTicks = 20;
                         }
                         
                         // 基準以上なら画面に捉えたと判定
@@ -260,14 +283,19 @@ public class HorrorSteveAi {
                                         if (distanceToPlayer <= 7.0) {
                                             // 7ブロック以内の近距離で見られた場合は、即座にワープせず突進モードに移行
                                             owner.isChargingToAttack = true;
+                                            owner.setAggressive(true);
                                             owner.chargeTicks = 0;
                                             owner.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
                                             // 突っ込んでくるときの暗闇エフェクトを付与
                                             target.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS, 60, 0, false, false));
+                                            
+                                            // 追加された「襲う時の音」を鳴らす（ループしないosoutokiをここで一回だけ鳴らす）
+                                            level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.OSOUTOKI, net.minecraft.sounds.SoundSource.HOSTILE, 1.4F, 1.0F);
                                         } else {
                                             owner.hasBeenSeenSinceWarp = true;
                                             owner.timeWhenSeen = level.getGameTime(); // 通常の逃走開始時間を記録
                                             owner.isActionActive = true; // アクション開始を宣言
+                                            com.example.entity.action.SoundAction.playRandomCompressedSound(level, target.blockPosition());
                                         }
                                     }
                                 } else {

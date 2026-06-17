@@ -11,6 +11,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.AABB;
 
 import com.mojang.serialization.Dynamic;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 
 import java.util.List;
 
@@ -42,6 +46,10 @@ public class HorrorSteveEntity extends PathfinderMob {
     // --- チャンク維持用変数 ---
     public net.minecraft.world.level.ChunkPos lastForcedChunk = null;
 
+    // --- 同期用データ ---
+    private static final EntityDataAccessor<Boolean> DATA_CHARGING_ID = SynchedEntityData.defineId(HorrorSteveEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> DATA_TOTAL_ALIVE_TICKS_ID = SynchedEntityData.defineId(HorrorSteveEntity.class, EntityDataSerializers.INT);
+
     public HorrorSteveEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
     }
@@ -53,6 +61,13 @@ public class HorrorSteveEntity extends PathfinderMob {
     }
 
 
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_CHARGING_ID, false);
+        this.entityData.define(DATA_TOTAL_ALIVE_TICKS_ID, 0);
+    }
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
@@ -87,6 +102,12 @@ public class HorrorSteveEntity extends PathfinderMob {
     public void tick() {
         super.tick();
         if (!this.level().isClientSide) {
+            this.entityData.set(DATA_CHARGING_ID, this.isChargingToAttack);
+            
+            // 生存時間をカウントアップ
+            int aliveTicks = this.entityData.get(DATA_TOTAL_ALIVE_TICKS_ID);
+            this.entityData.set(DATA_TOTAL_ALIVE_TICKS_ID, aliveTicks + 1);
+            
             ServerLevel serverLevel = (ServerLevel) this.level();
             
             // 毎秒自動回復（再生）
@@ -105,6 +126,8 @@ public class HorrorSteveEntity extends PathfinderMob {
                 serverLevel.setChunkForced(currentChunk.x, currentChunk.z, true);
                 this.lastForcedChunk = currentChunk;
             }
+        } else {
+            this.isChargingToAttack = this.entityData.get(DATA_CHARGING_ID);
         }
     }
     
@@ -198,5 +221,19 @@ public class HorrorSteveEntity extends PathfinderMob {
         this.level().getProfiler().pop();
         HorrorSteveAi.updateActivity(this);
         super.customServerAiStep();
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putInt("TotalAliveTicks", this.entityData.get(DATA_TOTAL_ALIVE_TICKS_ID));
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        if (compound.contains("TotalAliveTicks")) {
+            this.entityData.set(DATA_TOTAL_ALIVE_TICKS_ID, compound.getInt("TotalAliveTicks"));
+        }
     }
 }
