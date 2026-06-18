@@ -20,8 +20,18 @@ public class HorrorSteveRenderer extends MobRenderer<HorrorSteveEntity, PlayerMo
     };
 
     public HorrorSteveRenderer(EntityRendererProvider.Context context) {
-        // false specifies the "wide" arm model (Steve), true would be "slim" (Alex)
-        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5f);
+        super(context, new PlayerModel<HorrorSteveEntity>(context.bakeLayer(ModelLayers.PLAYER), false) {
+            @Override
+            public void setupAnim(HorrorSteveEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+                super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+                
+                // 突進攻撃時に首をかしげる（横に45度ロール）
+                if (entity.isChargingToAttack) {
+                    this.head.zRot = (float) Math.toRadians(45);
+                    this.hat.zRot = (float) Math.toRadians(45);
+                }
+            }
+        }, 0.5f);
     }
 
     @Override
@@ -43,5 +53,18 @@ public class HorrorSteveRenderer extends MobRenderer<HorrorSteveEntity, PlayerMo
         if (stage > 6) stage = 6;
         
         return DECAY_TEXTURES[stage];
+    }
+
+    @Override
+    public void render(HorrorSteveEntity entity, float entityYaw, float partialTicks, com.mojang.blaze3d.vertex.PoseStack poseStack, net.minecraft.client.renderer.MultiBufferSource buffer, int packedLight) {
+        // 襲うとき（突進攻撃モード時）に点滅（フリッカー）させる
+        if (entity.isChargingToAttack) {
+            // tickCountを使って、3ティックのうち1ティックだけ描画をスキップする（チカチカさせる）
+            // より不規則なノイズ感を出したい場合はランダムを使うことも可能
+            if (entity.tickCount % 3 == 0) {
+                return; // 描画を完全にスキップして透明になる
+            }
+        }
+        super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }
 }

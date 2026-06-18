@@ -22,6 +22,10 @@ public class SsttaallkkeerrModClient implements ClientModInitializer {
             com.example.SsttaallkkeerrMod.HORROR_STEVE, 
             com.example.client.renderer.HorrorSteveRenderer::new
         );
+        net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(
+            com.example.SsttaallkkeerrMod.FINAL_ACTION_STEVE, 
+            com.example.client.renderer.FinalActionSteveRenderer::new
+        );
 
 
         // ゴーストブロックの透過描画設定
@@ -52,9 +56,10 @@ public class SsttaallkkeerrModClient implements ClientModInitializer {
 
         // ジャンプスケアパケット受信登録
         ClientPlayNetworking.registerGlobalReceiver(ModNetworking.JUMPSCARE_PACKET_ID, (client, handler, buf, responseSender) -> {
+            int imageIndex = buf.readInt();
             client.execute(() -> {
                 // 0.5秒間表示
-                JumpscareOverlay.trigger(500);
+                JumpscareOverlay.trigger(500, imageIndex);
             });
         });
 

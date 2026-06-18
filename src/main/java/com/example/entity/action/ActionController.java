@@ -224,6 +224,12 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                 multiplier *= 3.0;
             }
             
+            // 赤い夜の経験回数に応じて、アクション確率の倍率を1回につき1%（0.01）ずつ増加させる
+            int redNightCount = com.example.world.RedNightState.get(level).weaknessLevel;
+            if (redNightCount > 0) {
+                multiplier *= (1.0 + (redNightCount * 0.01));
+            }
+            
             // --- 静止状態に応じたアクション（GO_BEHIND） ---
             if (this.playerStationaryTicks >= 200) {
                 // 10秒（200ティック）以上止まっている場合、毎ティック 0.1% (0.001) の確率で背後に現れる（夜間倍率対象外）

@@ -14,6 +14,15 @@ public class SimpleFogMixin {
 
     @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true)
     private static void onSetupFog(Camera camera, FogRenderer.FogMode mode, float viewDistance, boolean thickFog, float partialTicks, CallbackInfo ci) {
+        if (camera.getEntity() instanceof net.minecraft.world.entity.LivingEntity living) {
+            if (living.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS) && living.level().dimension().location().getPath().equals("nightmare")) {
+                RenderSystem.setShaderFogStart(0.0f);
+                RenderSystem.setShaderFogEnd(2.0f); // 1マス先で完全に真っ黒になる
+                ci.cancel();
+                return;
+            }
+        }
+        
         if (com.example.client.FogManager.fadeProgress > 0.0f) {
             float p = com.example.client.FogManager.fadeProgress;
             
@@ -37,6 +46,14 @@ public class SimpleFogMixin {
     }
     @Inject(method = "setupColor", at = @At("RETURN"))
     private static void onSetupColor(Camera camera, float partialTicks, net.minecraft.client.multiplayer.ClientLevel level, int renderDistanceChunks, float bossColorModifier, CallbackInfo ci) {
+        if (camera.getEntity() instanceof net.minecraft.world.entity.LivingEntity living) {
+            if (living.hasEffect(net.minecraft.world.effect.MobEffects.BLINDNESS) && living.level().dimension().location().getPath().equals("nightmare")) {
+                RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                RenderSystem.setShaderFogColor(0.0f, 0.0f, 0.0f, 1.0f);
+                return;
+            }
+        }
+        
         float p = com.example.client.FogManager.fadeProgress;
         if (p > 0.0f) {
             // 元の霧の色を正確に取得できない環境のフォールバックとして、標準的な空の色（明るいグレーブルー）からの補間を行う

@@ -20,8 +20,9 @@ public class ModNetworking {
         ServerPlayNetworking.send(player, SHAKE_PACKET_ID, buf);
     }
 
-    public static void sendJumpscareToPlayer(ServerPlayer player) {
+    public static void sendJumpscareToPlayer(ServerPlayer player, int imageIndex) {
         FriendlyByteBuf buf = PacketByteBufs.create();
+        buf.writeInt(imageIndex);
         ServerPlayNetworking.send(player, JUMPSCARE_PACKET_ID, buf);
     }
 }

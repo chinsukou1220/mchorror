@@ -30,8 +30,11 @@ public class DisplayAction extends Behavior<HorrorSteveEntity> {
         if (players.isPresent() && !players.get().isEmpty()) {
             Player target = players.get().get(0);
             if (target instanceof ServerPlayer serverPlayer) {
+                // 1から3までのランダムなインデックスを生成
+                int randomImageIndex = owner.getRandom().nextInt(3) + 1;
+                
                 // パケットを送信して画面に画像を表示
-                ModNetworking.sendJumpscareToPlayer(serverPlayer);
+                ModNetworking.sendJumpscareToPlayer(serverPlayer, randomImageIndex);
                 
                 // ビックリさせるために非常に大きな音を鳴らす（雷の音）
                 level.playSound(null, target.blockPosition(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.HOSTILE, 5.0f, 1.0f);

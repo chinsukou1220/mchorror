@@ -32,18 +32,40 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import com.example.command.HorrorDebugCommand;
 import com.example.item.HorrorDebugItem;
 
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.core.registries.BuiltInRegistries;
+
 public class SsttaallkkeerrMod implements ModInitializer {
 	public static final String MOD_ID = "ssttaallkkeerr";
+
+    // Register Nightmare Dimension Feature
+    public static final net.minecraft.world.level.levelgen.feature.Feature<NoneFeatureConfiguration> RANDOM_BLOCKS = 
+        new com.example.world.feature.RandomBlockFeature(NoneFeatureConfiguration.CODEC);
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final ResourceLocation RED_NIGHT_PACKET = new ResourceLocation(MOD_ID, "red_night");
+	
+	// ナイトメアディメンション滞在時間のトラッキング用
+	public static final java.util.Map<java.util.UUID, Integer> nightmareTicks = new java.util.HashMap<>();
+	
+	// クラッシュ時にバックアップを復元するためのフラグ
+	public static boolean shouldRestoreBackup = false;
+	
+	// リスポーン時にナイトメアへ送るプレイヤーのリスト
+	public static final java.util.Set<java.util.UUID> pendingNightmare = new java.util.HashSet<>();
 
 	// Register Horror Steve Entity
 	public static final EntityType<com.example.entity.HorrorSteveEntity> HORROR_STEVE = Registry.register(
 			BuiltInRegistries.ENTITY_TYPE,
 			new ResourceLocation(MOD_ID, "horror_steve"),
 			FabricEntityTypeBuilder.create(MobCategory.MISC, com.example.entity.HorrorSteveEntity::new)
-					.dimensions(EntityDimensions.fixed(1.2F, 3.6F)) // 2x Standard Player dimensions (2/3 of previous)
-					.build()
+					.dimensions(EntityDimensions.fixed(0.6F, 1.95F)).build()
+	);
+
+	public static final EntityType<com.example.entity.FinalActionSteveEntity> FINAL_ACTION_STEVE = Registry.register(
+			BuiltInRegistries.ENTITY_TYPE,
+			new ResourceLocation(MOD_ID, "finalactionsteve"),
+			FabricEntityTypeBuilder.create(MobCategory.MISC, com.example.entity.FinalActionSteveEntity::new)
+					.dimensions(EntityDimensions.fixed(0.6f, 1.95f)).build()
 	);
 
 	// Register Custom Sensor
@@ -127,6 +149,7 @@ public class SsttaallkkeerrMod implements ModInitializer {
 
 		// Register Entity attributes
 		FabricDefaultAttributeRegistry.register(HORROR_STEVE, com.example.entity.HorrorSteveEntity.createAttributes());
+		FabricDefaultAttributeRegistry.register(FINAL_ACTION_STEVE, com.example.entity.FinalActionSteveEntity.createAttributes());
 
 		// Add Items to the Creative Mode Spawn Eggs tab
 		ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(content -> {
@@ -134,15 +157,127 @@ public class SsttaallkkeerrMod implements ModInitializer {
 			content.accept(HORROR_DEBUG_WAND);
 		});
 
-	// Register Commands
+		// Register Commands
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			HorrorDebugCommand.register(dispatcher);
+		});
+		
+		// Register Features
+		Registry.register(BuiltInRegistries.FEATURE, new ResourceLocation(MOD_ID, "random_blocks"), RANDOM_BLOCKS);
+
+		// 赤い夜での死亡（致命傷）をキャンセルしてナイトメアへ強制転送
+		net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
+			if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
+				if (com.example.world.RedNightManager.isRedNightActive) {
+					// ダメージによって体力が0以下になる場合（致命傷）
+					if (player.getHealth() - amount <= 0.0f) {
+						// 死亡時にフラグを立てておき、リスポーン後にナイトメアへ転送する
+						pendingNightmare.add(player.getUUID());
+						return true; // 通常通り死なせる
+					}
+				}
+			}
+			return true;
+		});
+
+		// プレイヤーがリスポーンした時の処理
+		net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+			if (pendingNightmare.contains(newPlayer.getUUID())) {
+				pendingNightmare.remove(newPlayer.getUUID());
+				
+				net.minecraft.server.level.ServerLevel nightmareLevel = newPlayer.server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, new ResourceLocation(MOD_ID, "nightmare")));
+				
+				// オーバーワールド（リスポーンしたディメンション）にいるストーカーを消去
+				net.minecraft.server.level.ServerLevel currentLevel = newPlayer.serverLevel();
+				for (com.example.entity.HorrorSteveEntity steve : currentLevel.getEntitiesOfClass(com.example.entity.HorrorSteveEntity.class, newPlayer.getBoundingBox().inflate(100000.0))) {
+					steve.discard();
+				}
+				
+				if (nightmareLevel != null) {
+					// プレイヤーのインベントリを念のためクリア
+					newPlayer.getInventory().clearContent();
+					
+					// 完全に移動不可能（Slowness 127）にし、さらにジャンプ不能（Jump Boost 251）を付与
+					newPlayer.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 999999, 127, false, false));
+					newPlayer.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.JUMP, 999999, 250, false, false));
+					
+					// プレイヤーをY=1に転送
+					newPlayer.teleportTo(nightmareLevel, newPlayer.getX(), 1, newPlayer.getZ(), newPlayer.getYRot(), newPlayer.getXRot());
+					
+					// ナイトメア用のタイマーをリセット
+					com.example.SsttaallkkeerrMod.nightmareTicks.put(newPlayer.getUUID(), 0);
+				}
+			}
 		});
 
 		// Register Red Night Tick Event
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_WORLD_TICK.register(level -> {
 			if (level.dimension() == net.minecraft.world.level.Level.OVERWORLD) {
 				com.example.world.RedNightManager.tick(level);
+			}
+		});
+
+		// Nightmare Dimension Sequence
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
+			net.minecraft.server.level.ServerLevel nightmareLevel = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, new ResourceLocation(MOD_ID, "nightmare")));
+			if (nightmareLevel != null) {
+				for (net.minecraft.server.level.ServerPlayer player : nightmareLevel.players()) {
+					// マップから滞在時間を取得
+					int ticks = com.example.SsttaallkkeerrMod.nightmareTicks.getOrDefault(player.getUUID(), 0);
+					ticks++;
+					com.example.SsttaallkkeerrMod.nightmareTicks.put(player.getUUID(), ticks);
+					
+					// 動きを完全に封じる（スプリントダッシュなどの慣性も殺す）
+					player.setDeltaMovement(0, 0, 0);
+					if (player.getY() > 1.5 || player.getY() < 0.5) {
+					    player.teleportTo(nightmareLevel, player.getX(), 1.0, player.getZ(), player.getYRot(), player.getXRot());
+					}
+					
+					// ディメンション移動直後はエフェクトが剥がれることがあるため、最初の7秒間(140ティック)は強制的に盲目を与え続ける
+					if (ticks <= 140) {
+						player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.BLINDNESS, 20, 0, false, false, false));
+					}
+
+					if (ticks == 10) { // ディメンション読み込み直後（0.5秒後）にスポーン
+						// 半径12ブロックの円状に36体のFinalActionSteveをスポーン
+						int count = 36;
+						double radius = 12.0;
+						for (int i = 0; i < count; i++) {
+							double angle = 2 * Math.PI * i / count;
+							double x = player.getX() + radius * Math.cos(angle);
+							double z = player.getZ() + radius * Math.sin(angle);
+
+							com.example.entity.FinalActionSteveEntity steve = SsttaallkkeerrMod.FINAL_ACTION_STEVE.create(nightmareLevel);
+							if (steve != null) {
+								// Y=101にプレイヤーがいるのでそれに合わせる
+								steve.setPos(x, player.getY(), z);
+								// プレイヤーの方を向く
+								steve.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, player.position());
+								nightmareLevel.addFreshEntity(steve);
+							}
+						}
+					}
+					
+					// 20秒後 (400ティック) に強制クラッシュ
+					if (ticks == 400) {
+					    // クラッシュ後にバックアップを復元するフラグを立てる
+					    com.example.SsttaallkkeerrMod.shouldRestoreBackup = true;
+					    throw new RuntimeException("You lose. It was fun.");
+					}
+				}
+			}
+		});
+
+		// ワールド初回起動時のバックアップ処理
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+			com.example.util.WorldBackupManager.checkAndBackup(server);
+		});
+
+		// サーバー完全停止時（クラッシュしてセーブが完了した後）にバックアップを復元する
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+			if (com.example.SsttaallkkeerrMod.shouldRestoreBackup) {
+				com.example.util.WorldBackupManager.restoreBackup(server);
+				com.example.SsttaallkkeerrMod.shouldRestoreBackup = false;
 			}
 		});
 	}

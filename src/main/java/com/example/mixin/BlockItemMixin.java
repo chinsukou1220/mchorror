@@ -25,17 +25,7 @@ public class BlockItemMixin {
                         player.level().getGameTime()
                 );
                 
-                // デバッグ用表示：クラスター数と長さの表示
-                PlayerBlockTracker.PlayerData data = PlayerBlockTracker.getPlayerData(player.getUUID());
-                if (data != null && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-                    int maxLen = 0;
-                    for (java.util.LinkedList<PlayerBlockTracker.PlacedBlockRecord> c : data.clusters) {
-                        if (c.size() > maxLen) maxLen = c.size();
-                    }
-                    String debugText = String.format("§e[Debug] §fSaved Clusters: §a%d/50§f | Current Building: §b%d§f | Max Size: §c%d", 
-                        data.clusters.size(), data.currentBuildingCluster.size(), maxLen);
-                    serverPlayer.displayClientMessage(net.minecraft.network.chat.Component.literal(debugText), true);
-                }
+
             }
         }
     }

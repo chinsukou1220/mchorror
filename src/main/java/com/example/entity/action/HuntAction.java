@@ -187,6 +187,7 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
                 // 視認している場合はプレイヤーに一直線
                 targetPos = this.targetPlayer.position();
                 owner.getLookControl().setLookAt(this.targetPlayer, 45.0F, 90.0F);
+                owner.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, this.targetPlayer.getEyePosition());
             } else {
                 // 視認していない場合は自由な徘徊（ただし3ブロック以内には入らない）
                 double distToWander = Math.sqrt(Math.pow(this.wanderTargetX - owner.getX(), 2) + Math.pow(this.wanderTargetZ - owner.getZ(), 2));
@@ -208,6 +209,7 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
 
                 targetPos = new Vec3(this.wanderTargetX, this.targetPlayer.getY(), this.wanderTargetZ);
                 owner.getLookControl().setLookAt(targetPos.x, targetPos.y, targetPos.z, 45.0F, 90.0F);
+                owner.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, targetPos);
             }
 
             Vec3 toTarget = targetPos.subtract(owner.position());

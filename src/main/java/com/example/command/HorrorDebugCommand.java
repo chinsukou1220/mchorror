@@ -44,6 +44,24 @@ public class HorrorDebugCommand {
                 })
             )
         );
+
+        // 新しく追加する /rednight コマンド
+        dispatcher.register(Commands.literal("rednight")
+            .requires(source -> source.hasPermission(2))
+            .executes(context -> {
+                ServerLevel level = context.getSource().getLevel();
+                
+                // コマンド実行時にも弱体化レベルと確率を上げる
+                com.example.world.RedNightState state = com.example.world.RedNightState.get(level);
+                state.currentProbability = Math.min(1.0f, state.currentProbability + 0.10f);
+                state.weaknessLevel += 1;
+                state.setDirty();
+                
+                com.example.world.RedNightManager.startRedNight(level);
+                context.getSource().sendSuccess(() -> Component.literal("Triggered Red Night event! (Level " + state.weaknessLevel + ")"), true);
+                return 1;
+            })
+        );
     }
 
     private static int executeCommand(CommandContext<CommandSourceStack> context, String actionStr, int phase) {

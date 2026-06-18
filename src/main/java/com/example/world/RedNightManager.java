@@ -20,9 +20,83 @@ public class RedNightManager {
         if (timeOfDay >= 13000 && timeOfDay < 23000) {
             if (!checkedThisNight) {
                 checkedThisNight = true;
-                // 30%の確率でRed Night発生
-                if (level.random.nextFloat() < 0.30f) {
+                
+                // 現在の確率とレベルを取得
+                RedNightState state = RedNightState.get(level);
+                
+                // 確率判定
+                if (level.random.nextFloat() < state.currentProbability) {
+                    // 赤い夜発生！確率を10%上げ、弱体化レベルを1上げる
+                    state.currentProbability = Math.min(1.0f, state.currentProbability + 0.10f);
+                    state.weaknessLevel += 1;
+                    state.setDirty(); // 変更を保存
+                    
                     startRedNight(level);
+                }
+            }
+            
+            // 赤い夜がアクティブな間、敵モブにバフをかけ続ける
+            if (isRedNightActive) {
+                if (level.getGameTime() % 100 == 0) {
+                    RedNightState state = RedNightState.get(level);
+                    // 2回に1回レベルが上がるように調整 (weaknessLevel=1,2で0、3,4で1、5で2...)
+                    int amplifier = Math.max(0, (state.weaknessLevel - 1) / 2); 
+                    for (ServerPlayer player : level.players()) {
+                        // プレイヤーの周囲128ブロック以内の敵モブを取得
+                        for (net.minecraft.world.entity.monster.Monster monster : level.getEntitiesOfClass(net.minecraft.world.entity.monster.Monster.class, player.getBoundingBox().inflate(128.0))) {
+                            // 攻撃力上昇 (Strength)
+                            monster.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST, 200, amplifier, false, false, false));
+                            
+                            // 耐性 (Resistance) - レベル5で無敵になるのを防ぐため最大レベル3 (80%カット) まで
+                            int resAmp = Math.min(amplifier, 3);
+                            monster.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 200, resAmp, false, false, false));
+                        }
+                    }
+                }
+                
+                // 強力なエンティティの自然スポーン処理 (1200ティック = 60秒ごとに抽選)
+                if (level.getGameTime() % 1200 == 0) {
+                    RedNightState state = RedNightState.get(level);
+                    if (state.weaknessLevel >= 5) {
+                        for (ServerPlayer player : level.players()) {
+                            net.minecraft.world.entity.EntityType<?> toSpawn = null;
+                            if (state.weaknessLevel == 5) {
+                                toSpawn = net.minecraft.world.entity.EntityType.RAVAGER;
+                            } else if (state.weaknessLevel == 6) {
+                                toSpawn = net.minecraft.world.entity.EntityType.WARDEN;
+                            } else if (state.weaknessLevel == 7) {
+                                toSpawn = net.minecraft.world.entity.EntityType.WITHER;
+                            } else if (state.weaknessLevel >= 8) {
+                                net.minecraft.world.entity.EntityType<?>[] bosses = {
+                                    net.minecraft.world.entity.EntityType.RAVAGER, 
+                                    net.minecraft.world.entity.EntityType.WARDEN, 
+                                    net.minecraft.world.entity.EntityType.WITHER, 
+                                    net.minecraft.world.entity.EntityType.EVOKER, 
+                                    net.minecraft.world.entity.EntityType.ILLUSIONER
+                                };
+                                toSpawn = bosses[level.random.nextInt(bosses.length)];
+                            }
+                            
+                            if (toSpawn != null) {
+                                // プレイヤーから15～25ブロック離れた位置にスポーン
+                                double dx = (level.random.nextBoolean() ? 1 : -1) * (15 + level.random.nextInt(10));
+                                double dz = (level.random.nextBoolean() ? 1 : -1) * (15 + level.random.nextInt(10));
+                                net.minecraft.core.BlockPos spawnPos = new net.minecraft.core.BlockPos(
+                                    (int)(player.getX() + dx), 
+                                    (int)player.getY(), 
+                                    (int)(player.getZ() + dz)
+                                );
+                                // 地表の高さを取得
+                                spawnPos = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawnPos);
+                                
+                                net.minecraft.world.entity.Entity entity = toSpawn.create(level);
+                                if (entity != null) {
+                                    entity.setPos(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+                                    level.addFreshEntity(entity);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         } else {
@@ -32,9 +106,40 @@ public class RedNightManager {
             }
             checkedThisNight = false; // 次の夜に向けてリセット
         }
+        
+        // 3回目の赤い夜以降、約10分（12000ティック）おきに不気味なチャットを送信する
+        if (level.getGameTime() % 12000 == 0) {
+            RedNightState state = RedNightState.get(level);
+            if (state.weaknessLevel >= 3) {
+                String[] messages = {
+                    "Why won't you die?",
+                    "Just die already.",
+                    "Why? Why? Why? Why? Why?",
+                    "Give up.",
+                    "It hurts.",
+                    "You can't escape."
+                };
+                String msg = messages[level.random.nextInt(messages.length)];
+                
+                // エンティティの名前（文字化け）を生成
+                net.minecraft.network.chat.Component senderName = net.minecraft.network.chat.Component.literal("UnknownEntity")
+                    .withStyle(net.minecraft.ChatFormatting.OBFUSCATED, net.minecraft.ChatFormatting.DARK_GRAY);
+                
+                // チャットの形式: <[文字化け]> メッセージ
+                net.minecraft.network.chat.Component chatMsg = net.minecraft.network.chat.Component.empty()
+                    .append(net.minecraft.network.chat.Component.literal("<").withStyle(net.minecraft.ChatFormatting.WHITE))
+                    .append(senderName)
+                    .append(net.minecraft.network.chat.Component.literal("> ").withStyle(net.minecraft.ChatFormatting.WHITE))
+                    .append(net.minecraft.network.chat.Component.literal(msg).withStyle(net.minecraft.ChatFormatting.RED));
+                
+                for (ServerPlayer player : level.players()) {
+                    player.sendSystemMessage(chatMsg);
+                }
+            }
+        }
     }
 
-    private static void startRedNight(ServerLevel level) {
+    public static void startRedNight(ServerLevel level) {
         isRedNightActive = true;
         
         for (ServerPlayer player : level.players()) {
