@@ -30,9 +30,9 @@ public class SimpleFogMixin {
             float defaultStart = viewDistance * 0.75f;
             float defaultEnd = viewDistance;
             
-            // 完全に赤くなったとき（p=1.0）の距離（視界を広げるために緩和）
-            float targetStart = 5.0f;
-            float targetEnd = 40.0f;
+            // 完全に赤くなったとき（p=1.0）の距離（視界を狭める）
+            float targetStart = 2.0f;
+            float targetEnd = 15.0f;
             
             // 線形補間で徐々に霧が迫ってくるように計算
             float currentStart = net.minecraft.util.Mth.lerp(p, defaultStart, targetStart);

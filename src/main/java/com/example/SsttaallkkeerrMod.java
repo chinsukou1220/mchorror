@@ -142,7 +142,9 @@ public class SsttaallkkeerrMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Hello Fabric world!");
-
+		
+		// 起動時にクラッシュ復旧のマーカーがあれば、サーバーが立ち上がる前にバックアップを上書き復元する
+		com.example.util.WorldBackupManager.checkPendingRestore();
 
 		// Initialize First Action (10-minute event)
 		FirstActionManager.init();
@@ -260,8 +262,8 @@ public class SsttaallkkeerrMod implements ModInitializer {
 					
 					// 20秒後 (400ティック) に強制クラッシュ
 					if (ticks == 400) {
-					    // クラッシュ後にバックアップを復元するフラグを立てる
-					    com.example.SsttaallkkeerrMod.shouldRestoreBackup = true;
+					    // クラッシュでゲームが落ちた後、次回のマイクラ起動時にバックアップを復元するためのマーカーを作成
+					    com.example.util.WorldBackupManager.setPendingRestore(server);
 					    throw new RuntimeException("You lose. It was fun.");
 					}
 				}
@@ -271,14 +273,6 @@ public class SsttaallkkeerrMod implements ModInitializer {
 		// ワールド初回起動時のバックアップ処理
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTING.register(server -> {
 			com.example.util.WorldBackupManager.checkAndBackup(server);
-		});
-
-		// サーバー完全停止時（クラッシュしてセーブが完了した後）にバックアップを復元する
-		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
-			if (com.example.SsttaallkkeerrMod.shouldRestoreBackup) {
-				com.example.util.WorldBackupManager.restoreBackup(server);
-				com.example.SsttaallkkeerrMod.shouldRestoreBackup = false;
-			}
 		});
 	}
 }

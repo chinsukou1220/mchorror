@@ -60,22 +60,40 @@ public class RedNightManager {
                     if (state.weaknessLevel >= 5) {
                         for (ServerPlayer player : level.players()) {
                             net.minecraft.world.entity.EntityType<?> toSpawn = null;
+                            net.minecraft.world.entity.EntityType<?>[] bosses;
                             if (state.weaknessLevel == 5) {
-                                toSpawn = net.minecraft.world.entity.EntityType.RAVAGER;
+                                bosses = new net.minecraft.world.entity.EntityType<?>[]{
+                                    net.minecraft.world.entity.EntityType.RAVAGER,
+                                    net.minecraft.world.entity.EntityType.GHAST,
+                                    net.minecraft.world.entity.EntityType.BLAZE
+                                };
                             } else if (state.weaknessLevel == 6) {
-                                toSpawn = net.minecraft.world.entity.EntityType.WARDEN;
+                                bosses = new net.minecraft.world.entity.EntityType<?>[]{
+                                    net.minecraft.world.entity.EntityType.WARDEN,
+                                    net.minecraft.world.entity.EntityType.RAVAGER,
+                                    net.minecraft.world.entity.EntityType.GHAST,
+                                    net.minecraft.world.entity.EntityType.BLAZE
+                                };
                             } else if (state.weaknessLevel == 7) {
-                                toSpawn = net.minecraft.world.entity.EntityType.WITHER;
-                            } else if (state.weaknessLevel >= 8) {
-                                net.minecraft.world.entity.EntityType<?>[] bosses = {
+                                bosses = new net.minecraft.world.entity.EntityType<?>[]{
+                                    net.minecraft.world.entity.EntityType.WITHER,
+                                    net.minecraft.world.entity.EntityType.ENDER_DRAGON,
+                                    net.minecraft.world.entity.EntityType.GHAST,
+                                    net.minecraft.world.entity.EntityType.BLAZE
+                                };
+                            } else {
+                                bosses = new net.minecraft.world.entity.EntityType<?>[]{
                                     net.minecraft.world.entity.EntityType.RAVAGER, 
                                     net.minecraft.world.entity.EntityType.WARDEN, 
                                     net.minecraft.world.entity.EntityType.WITHER, 
+                                    net.minecraft.world.entity.EntityType.ENDER_DRAGON,
                                     net.minecraft.world.entity.EntityType.EVOKER, 
-                                    net.minecraft.world.entity.EntityType.ILLUSIONER
+                                    net.minecraft.world.entity.EntityType.ILLUSIONER,
+                                    net.minecraft.world.entity.EntityType.GHAST,
+                                    net.minecraft.world.entity.EntityType.BLAZE
                                 };
-                                toSpawn = bosses[level.random.nextInt(bosses.length)];
                             }
+                            toSpawn = bosses[level.random.nextInt(bosses.length)];
                             
                             if (toSpawn != null) {
                                 // プレイヤーから15～25ブロック離れた位置にスポーン

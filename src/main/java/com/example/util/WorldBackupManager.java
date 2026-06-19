@@ -110,4 +110,40 @@ public class WorldBackupManager {
             }
         });
     }
+
+    public static void setPendingRestore(MinecraftServer server) {
+        try {
+            Path worldDir = server.getWorldPath(LevelResource.ROOT);
+            Path configDir = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir();
+            Path markerFile = configDir.resolve("ssttaallkkeerr_pending_restore.txt");
+            Files.writeString(markerFile, worldDir.toAbsolutePath().toString());
+            SsttaallkkeerrMod.LOGGER.info("[HorrorSteve] Pending restore marker created for: " + worldDir.toAbsolutePath().toString());
+        } catch (Exception e) {
+            SsttaallkkeerrMod.LOGGER.error("[HorrorSteve] Failed to create pending restore marker!", e);
+        }
+    }
+
+    public static void checkPendingRestore() {
+        try {
+            Path configDir = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir();
+            Path markerFile = configDir.resolve("ssttaallkkeerr_pending_restore.txt");
+            if (Files.exists(markerFile)) {
+                String worldPathStr = Files.readString(markerFile).trim();
+                Path worldDir = Paths.get(worldPathStr);
+                Path backupDir = worldDir.resolve("ssttaallkkeerr_backup");
+                
+                if (Files.exists(backupDir) && Files.exists(worldDir)) {
+                    SsttaallkkeerrMod.LOGGER.info("[HorrorSteve] Found pending restore marker! Restoring world before server starts...");
+                    copyDirectoryForRestore(backupDir, worldDir);
+                    SsttaallkkeerrMod.LOGGER.info("[HorrorSteve] Pre-launch restore completed.");
+                } else {
+                    SsttaallkkeerrMod.LOGGER.error("[HorrorSteve] Pre-launch restore failed: World or backup directory not found.");
+                }
+                
+                Files.deleteIfExists(markerFile);
+            }
+        } catch (Exception e) {
+            SsttaallkkeerrMod.LOGGER.error("[HorrorSteve] Failed during pre-launch restore check!", e);
+        }
+    }
 }

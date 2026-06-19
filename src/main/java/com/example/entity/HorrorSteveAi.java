@@ -245,21 +245,21 @@ public class HorrorSteveAi {
                         Vec3 vectorToEntity = owner.getEyePosition().subtract(target.getEyePosition()).normalize();
                         double dotProduct = viewVector.dot(vectorToEntity);
                         
-                        // 距離に応じて判定基準を変更
-                        // 5ブロック以下：0.1（画面端） / 0秒(0ティック)
-                        // 20ブロック以下：0.3 / 0.1秒(2ティック)
-                        // 20ブロック超：0.8 / 1秒(20ティック)
+                        // 距離に応じて判定基準を変更（目が合ったかどうかの判定をより厳しく）
+                        // 5ブロック以下：0.5（前方広角） / 0秒(0ティック)
+                        // 20ブロック以下：0.7（前方45度程度） / 0.1秒(2ティック)
+                        // 20ブロック超：0.95（ほぼ画面中央） / 1秒(20ティック)
                         double thresholdDot;
                         int thresholdTicks;
                         
                         if (distanceToPlayer <= 5.0) {
-                            thresholdDot = 0.1;
+                            thresholdDot = 0.5;
                             thresholdTicks = 0;
                         } else if (distanceToPlayer <= 20.0) {
-                            thresholdDot = 0.3;
+                            thresholdDot = 0.7;
                             thresholdTicks = 2;
                         } else {
-                            thresholdDot = 0.8;
+                            thresholdDot = 0.95;
                             thresholdTicks = 20;
                         }
                         

@@ -312,8 +312,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         }
                     }
                     
-                    // 他のモブに化けて近づいてくるアクション
-                    if (Math.random() < 0.0005 * multiplier) {
+                    // 他のモブに化けて近づいてくるアクション (約300秒に1回程度：0.00016)
+                    if (Math.random() < 0.00016 * multiplier) {
                         this.currentAction = ActionType.SKINWALKER;
                         return true;
                     }
