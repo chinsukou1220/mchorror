@@ -226,10 +226,10 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                 multiplier *= 3.0;
             }
             
-            // 赤い夜の経験回数に応じて、アクション確率の倍率を1回につき1%（0.01）ずつ増加させる
+            // 赤い夜の経験回数に応じて、アクション確率の倍率を1回につき50%（0.50）ずつ増加させる
             int redNightCount = com.example.world.RedNightState.get(level).weaknessLevel;
             if (redNightCount > 0) {
-                multiplier *= (1.0 + (redNightCount * 0.01));
+                multiplier *= (1.0 + (redNightCount * 0.50));
             }
             
             // --- 静止状態に応じたアクション（GO_BEHIND） ---
@@ -241,8 +241,10 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                 }
             }
             // 全環境共通のフェイクカウントダウン＆強襲アクション
-            // 40分（48000ティック）に1回程度の頻度にするためのクールダウン
-            if (level.getGameTime() - owner.lastTimerActionTime > 48000) {
+            // クールダウン: (40 - レベル * 5) 分（最低0分）
+            int timerCooldownMinutes = Math.max(0, 40 - redNightCount * 5);
+            long timerCooldownTicks = timerCooldownMinutes * 1200L;
+            if (level.getGameTime() - owner.lastTimerActionTime > timerCooldownTicks) {
                 // クールダウンが明けていれば、少しの確率で抽選（約5分に1回当たる確率）
                 if (Math.random() < 0.00015 * multiplier) {
                     owner.lastTimerActionTime = level.getGameTime();
@@ -252,26 +254,37 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             }
             
             // --- 通常のアクション（プレイヤーが動いている時） ---
-            else {
-                // プレイヤーの居場所を判定
-                boolean isUnderground = false;
-                boolean isNether = level.dimension() == net.minecraft.world.level.Level.NETHER;
-                if (players.isPresent() && !players.get().isEmpty()) {
-                    isUnderground = com.example.util.UndergroundDetector.isPlayerUnderground(level, players.get().get(0));
+            
+            // プレイヤーの居場所を判定
+            boolean isUnderground = false;
+            boolean isNether = level.dimension() == net.minecraft.world.level.Level.NETHER;
+            if (players.isPresent() && !players.get().isEmpty()) {
+                isUnderground = com.example.util.UndergroundDetector.isPlayerUnderground(level, players.get().get(0));
+            }
+            
+            // 【最優先】洞窟（地下）・ネザーでの壁掘り強襲アクション (CAVE_AMBUSH)
+            if (isUnderground || isNether) {
+                // 確率: 約1000秒(16分)に1回程度 (0.00005)
+                if (Math.random() < 0.00005 * multiplier) {
+                    this.currentAction = ActionType.CAVE_AMBUSH;
+                    return true;
                 }
-                
-
-                if (isUnderground || isNether) {
-                    // ==========================================
-                    // 洞窟（地下）・ネザー専用アクション
-                    // ==========================================
-                    
-                    // 壁掘り強襲アクション (CAVE_AMBUSH)
-                    // 確率: 約1000秒(16分)に1回程度 (0.00005)
-                    if (Math.random() < 0.00005 * multiplier) {
-                        this.currentAction = ActionType.CAVE_AMBUSH;
+            }
+            
+            // 【最優先】家にいる時限定のホラーアクション (HOUSE)
+            if (Math.random() < 0.0001 * multiplier) {
+                if (players.isPresent() && !players.get().isEmpty()) {
+                    if (com.example.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
+                        this.currentAction = ActionType.HOUSE;
                         return true;
                     }
+                }
+            }
+
+            if (isUnderground || isNether) {
+                // ==========================================
+                // その他の洞窟（地下）・ネザー専用アクション
+                // ==========================================
                     
                     // 【新規】透明で近づき足音だけ残して去り、遠くで見つめるアクション（洞窟・ネザー限定）
                     // 確率: 約250秒(4分)に1回程度 (0.0002)
@@ -286,11 +299,11 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         this.currentAction = ActionType.UNDERGROUND;
                         return true;
                     }
-                    
-                } else {
-                    // ==========================================
-                    // 地上（通常）アクション
-                    // ==========================================
+                } // ← ここで(isUnderground || isNether)のブロックを閉じる！！！
+
+                // ==========================================
+                // その他のアクション（全環境）
+                // ==========================================
                     
                     // 通常状態でのランダムワープ抽選（約100秒に1回程度：0.0005）
                     // 「赤い夜（Red Night）」の間は発生しないように変更
@@ -301,10 +314,10 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         }
                     }
                     
+
                     // 赤い夜専用：霧の中からの凝視 (INFOG)
                     if (com.example.world.RedNightManager.isRedNightActive) {
-                        int rnLevel = com.example.world.RedNightState.get(level).weaknessLevel;
-                        if (rnLevel < 15 && Math.random() < 0.0005 * multiplier) {
+                        if (Math.random() < 0.00005 * multiplier) {
                             this.currentAction = ActionType.INFOG;
                             return true;
                         }
@@ -327,9 +340,13 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     }
                     
                     // 他のモブに化けて近づいてくるアクション (約300秒に1回程度：0.00016)
-                    if (Math.random() < 0.00016 * multiplier) {
-                        this.currentAction = ActionType.SKINWALKER;
-                        return true;
+                    if (players.isPresent() && !players.get().isEmpty()) {
+                        if (!com.example.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
+                            if (Math.random() < 0.00016 * multiplier) {
+                                this.currentAction = ActionType.SKINWALKER;
+                                return true;
+                            }
+                        }
                     }
 
                     // 置いたブロックを全て破壊するアクション (0.00002)
@@ -344,15 +361,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         return true;
                     }
 
-                    // 家にいる時限定のホラーアクション
-                    if (Math.random() < 0.0001 * multiplier) {
-                        if (players.isPresent() && !players.get().isEmpty()) {
-                            if (com.example.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
-                                this.currentAction = ActionType.HOUSE;
-                                return true;
-                            }
-                        }
-                    }
+
                     
                     // 看板設置アクション（家にいる時限定） (0.00005)
                     if (Math.random() < 0.00005 * multiplier) {
@@ -387,8 +396,6 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         this.currentAction = ActionType.KILLING_MOB;
                         return true;
                     }
-                }
-            }
             
             // まだ時間が経っていなければ、アクションは起こさない
             return false;

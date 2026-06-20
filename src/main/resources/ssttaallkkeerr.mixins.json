@@ -11,7 +11,9 @@
 		"MobCategoryMixin",
 		"AnimalMixin",
 		"NaturalSpawnerMixin",
-		"MonsterTargetWitherMixin"
+		"MonsterTargetWitherMixin",
+		"WitherBossMixin",
+		"WardenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

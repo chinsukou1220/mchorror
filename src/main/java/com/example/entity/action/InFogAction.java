@@ -38,7 +38,7 @@ public class InFogAction extends Behavior<HorrorSteveEntity> {
         if (players.isPresent() && !players.get().isEmpty()) {
             Player target = players.get().get(0);
             Vec3 look = target.getLookAngle();
-            double distance = 5.0 + level.random.nextDouble() * 10.0;
+            double distance = 5.0 + level.random.nextDouble() * 1.0;
             double targetX = target.getX() + look.x * distance;
             double targetZ = target.getZ() + look.z * distance;
             
@@ -46,8 +46,7 @@ public class InFogAction extends Behavior<HorrorSteveEntity> {
             BlockPos spawnPos = new BlockPos((int)targetX, y, (int)targetZ);
 
             int rnLevel = com.example.world.RedNightState.get(level).weaknessLevel;
-            waitTicks = (15 - rnLevel) * 20;
-            if (waitTicks < 20) waitTicks = 20;
+            waitTicks = Math.max(1, 15 - rnLevel) * 20;
             currentTicks = 0;
             
             // tp

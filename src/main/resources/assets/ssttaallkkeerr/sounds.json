@@ -4,7 +4,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.kanakirigoe",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:kanakirigoe"
+        "name": "ssttaallkkeerr:kanakirigoe",
+        "volume": 0.5
       }
     ]
   },
@@ -13,7 +14,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.osoutoki",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:osoutoki"
+        "name": "ssttaallkkeerr:osoutoki",
+        "volume": 0.5
       }
     ]
   },
@@ -22,7 +24,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.wqwqwqq",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:wqwqwqq"
+        "name": "ssttaallkkeerr:wqwqwqq",
+        "volume": 0.5
       }
     ]
   },
@@ -31,7 +34,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_1",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_1"
+        "name": "ssttaallkkeerr:horror_accent_1",
+        "volume": 0.7
       }
     ]
   },
@@ -40,7 +44,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_2",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_2"
+        "name": "ssttaallkkeerr:horror_accent_2",
+        "volume": 0.7
       }
     ]
   },
@@ -49,7 +54,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_3",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_3"
+        "name": "ssttaallkkeerr:horror_accent_3",
+        "volume": 0.7
       }
     ]
   },
@@ -58,7 +64,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_4",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_4"
+        "name": "ssttaallkkeerr:horror_accent_4",
+        "volume": 0.7
       }
     ]
   },
@@ -67,7 +74,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_5",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_5"
+        "name": "ssttaallkkeerr:horror_accent_5",
+        "volume": 0.7
       }
     ]
   },
@@ -76,7 +84,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_6",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_6"
+        "name": "ssttaallkkeerr:horror_accent_6",
+        "volume": 0.7
       }
     ]
   },
@@ -85,7 +94,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_7",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_7"
+        "name": "ssttaallkkeerr:horror_accent_7",
+        "volume": 0.7
       }
     ]
   },
@@ -94,7 +104,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_8",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_8"
+        "name": "ssttaallkkeerr:horror_accent_8",
+        "volume": 0.7
       }
     ]
   },
@@ -103,7 +114,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_9",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_9"
+        "name": "ssttaallkkeerr:horror_accent_9",
+        "volume": 0.7
       }
     ]
   },
@@ -112,7 +124,8 @@
     "subtitle": "ssttaallkkeerr.subtitle.horror_accent_10",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:horror_accent_10"
+        "name": "ssttaallkkeerr:horror_accent_10",
+        "volume": 0.7
       }
     ]
   },
@@ -120,7 +133,8 @@
     "category": "hostile",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:beep"
+        "name": "ssttaallkkeerr:beep",
+        "volume": 0.5
       }
     ]
   },
@@ -128,7 +142,8 @@
     "category": "hostile",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:sakebigoe_hajime"
+        "name": "ssttaallkkeerr:sakebigoe_hajime",
+        "volume": 0.5
       }
     ]
   },
@@ -136,7 +151,8 @@
     "category": "hostile",
     "sounds": [
       {
-        "name": "ssttaallkkeerr:sakebigoe_owari"
+        "name": "ssttaallkkeerr:sakebigoe_owari",
+        "volume": 0.5
       }
     ]
   }

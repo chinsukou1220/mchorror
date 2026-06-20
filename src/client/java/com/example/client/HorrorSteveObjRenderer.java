@@ -63,7 +63,7 @@ public class HorrorSteveObjRenderer extends EntityRenderer<HorrorSteveEntity> {
                 // 1.5だと高すぎるので1.0まで下げる（必要に応じて後で微調整可能）
                 poseStack.translate(0, 1.0, 0);
                 poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-netHeadYaw)); // 横振り（背中側が顔なので反転させる）
-                poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(headPitch));
+                poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(-headPitch)); // 縦振りも背中側が顔なので反転させる
                 poseStack.translate(0, -1.0, 0);
             } else if (name.contains("right_arm") || name.contains("arm_r") || name.equals("rightarm")) {
                 // 肩幅を狭く(+X)、下に下げる(-Y)、前方に出す(+Z)

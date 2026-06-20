@@ -54,31 +54,29 @@ public class RedNightManager {
                     }
                 }
                 
-                // 強力なエンティティの自然スポーン処理 (1200ティック = 60秒ごとに抽選)
-                if (level.getGameTime() % 1200 == 0) {
-                    RedNightState state = RedNightState.get(level);
-                    if (state.weaknessLevel >= 5) {
+                // 強力なエンティティの自然スポーン処理 (レベルに応じて間隔が短くなる)
+                RedNightState bossState = RedNightState.get(level);
+                // レベル5で1200tick(60秒)、レベルが上がるごとに100tick(5秒)短縮、最短200tick(10秒)
+                int bossInterval = Math.max(200, 1200 - (bossState.weaknessLevel - 5) * 100);
+                if (level.getGameTime() % bossInterval == 0) {
+                    if (bossState.weaknessLevel >= 5) {
                         for (ServerPlayer player : level.players()) {
                             net.minecraft.world.entity.EntityType<?> toSpawn = null;
                             net.minecraft.world.entity.EntityType<?>[] bosses;
-                            if (state.weaknessLevel == 5) {
+                            if (bossState.weaknessLevel == 5) {
                                 bosses = new net.minecraft.world.entity.EntityType<?>[]{
                                     net.minecraft.world.entity.EntityType.RAVAGER,
-                                    net.minecraft.world.entity.EntityType.GHAST,
                                     net.minecraft.world.entity.EntityType.BLAZE
                                 };
-                            } else if (state.weaknessLevel == 6) {
+                            } else if (bossState.weaknessLevel == 6) {
                                 bosses = new net.minecraft.world.entity.EntityType<?>[]{
                                     net.minecraft.world.entity.EntityType.WARDEN,
                                     net.minecraft.world.entity.EntityType.RAVAGER,
-                                    net.minecraft.world.entity.EntityType.GHAST,
                                     net.minecraft.world.entity.EntityType.BLAZE
                                 };
-                            } else if (state.weaknessLevel == 7) {
+                            } else if (bossState.weaknessLevel == 7) {
                                 bosses = new net.minecraft.world.entity.EntityType<?>[]{
                                     net.minecraft.world.entity.EntityType.WITHER,
-                                    net.minecraft.world.entity.EntityType.ENDER_DRAGON,
-                                    net.minecraft.world.entity.EntityType.GHAST,
                                     net.minecraft.world.entity.EntityType.BLAZE
                                 };
                             } else {
@@ -86,10 +84,6 @@ public class RedNightManager {
                                     net.minecraft.world.entity.EntityType.RAVAGER, 
                                     net.minecraft.world.entity.EntityType.WARDEN, 
                                     net.minecraft.world.entity.EntityType.WITHER, 
-                                    net.minecraft.world.entity.EntityType.ENDER_DRAGON,
-                                    net.minecraft.world.entity.EntityType.EVOKER, 
-                                    net.minecraft.world.entity.EntityType.ILLUSIONER,
-                                    net.minecraft.world.entity.EntityType.GHAST,
                                     net.minecraft.world.entity.EntityType.BLAZE
                                 };
                             }

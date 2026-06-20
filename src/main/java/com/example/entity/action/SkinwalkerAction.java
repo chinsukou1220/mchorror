@@ -20,6 +20,7 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
     private PathfinderMob dummyMob = null;
     private Player targetPlayer = null;
     private int ticksActive = 0;
+    private int maxTicks = 400;
 
     public SkinwalkerAction() {
         // デフォルトは60ティック(3秒)で強制終了してしまうため、400ティック(20秒)に延長
@@ -41,6 +42,11 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
 
         this.targetPlayer = optionalPlayers.get().get(0);
         this.ticksActive = 0;
+
+        int rnLevel = com.example.world.RedNightState.get(level).weaknessLevel;
+        int durationSeconds = 20 - (rnLevel * 2);
+        if (durationSeconds < 3) durationSeconds = 3; // 安全柵: 最小3秒
+        this.maxTicks = durationSeconds * 20;
 
         // ランダムな動物や敵対モブに擬態する
         EntityType<?>[] types = {
@@ -65,8 +71,9 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
             this.dummyMob.setCustomName(net.minecraft.network.chat.Component.literal("skinwalker"));
             this.dummyMob.setCustomNameVisible(false); // 名前は非表示
             
-            // ゾンビと同じくらいの歩行速度を設定（Base 0.23程度）
-            this.dummyMob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(0.23D);
+            // 歩行速度をレベルに応じて上昇させる (Base 0.23 + 0.1 * level)
+            double baseSpeed = 0.23D + (0.1D * rnLevel);
+            this.dummyMob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(baseSpeed);
             // 体力を1000に設定（攻撃で倒されてドロップが出るのを防ぐ）
             this.dummyMob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000.0D);
             this.dummyMob.setHealth(1000.0F);
@@ -96,8 +103,8 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
             return false;
         }
 
-        // タイムアウト（20秒 = 400ティック）
-        if (this.ticksActive > 400) {
+        // タイムアウト（レベルに応じた時間）
+        if (this.ticksActive > this.maxTicks) {
             return false;
         }
 
@@ -122,8 +129,8 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
                 else if (this.dummyMob.getType() == EntityType.SKELETON) sound = net.minecraft.sounds.SoundEvents.SKELETON_AMBIENT;
                 
                 if (sound != null) {
-                    // 通常のピッチ(1.0〜1.2等)を大きく外れた 0.4〜0.6 の極低音にする
-                    float pitch = 0.4f + level.random.nextFloat() * 0.2f;
+                    // 通常のピッチ(1.0〜1.2等)を大きく外れた 0.2〜0.4 の極低音にする
+                    float pitch = 0.2f + level.random.nextFloat() * 0.2f;
                     level.playSound(null, this.dummyMob.getX(), this.dummyMob.getY(), this.dummyMob.getZ(), 
                             sound, net.minecraft.sounds.SoundSource.HOSTILE, 1.5f, pitch);
                 }

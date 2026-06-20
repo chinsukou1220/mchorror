@@ -13,13 +13,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class ChestAction extends Behavior<HorrorSteveEntity> {
 
     private int chestOpenTicks = 0;
-    private BlockPos openedChestPos = null;
+    private List<BlockPos> openedChestPosList = new ArrayList<>();
 
     public ChestAction() {
         super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 100, 100);
@@ -132,7 +137,8 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
             for (int dy = -5; dy <= 5; dy++) {
                 for (int dz = -15; dz <= 15; dz++) {
                     BlockPos checkPos = origin.offset(dx, dy, dz);
-                    if (level.getBlockState(checkPos).is(Blocks.CHEST)) {
+                    net.minecraft.world.level.block.state.BlockState st = level.getBlockState(checkPos);
+                    if (st.is(Blocks.CHEST) || st.is(Blocks.BARREL) || st.is(Blocks.TRAPPED_CHEST)) {
                         chestPositions.add(checkPos);
                     }
                 }
@@ -145,78 +151,95 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
             return;
         }
 
-        // ランダムなチェストを選択
-        BlockPos targetChestPos = chestPositions.get(level.random.nextInt(chestPositions.size()));
-        BlockEntity blockEntity = level.getBlockEntity(targetChestPos);
+        int rnLevel = com.example.world.RedNightState.get(level).weaknessLevel;
+        int numTargets = Math.min(chestPositions.size(), Math.max(1, 1 + rnLevel / 4));
+        Collections.shuffle(chestPositions);
 
-        if (blockEntity instanceof Container container) {
-            int actionType = level.random.nextInt(4);
+        boolean openedAny = false;
 
-            switch (actionType) {
-                case 0:
-                    // ① 怪奇現象：チェストが勝手に開き、少し後に閉まる
-                    level.blockEvent(targetChestPos, Blocks.CHEST, 1, 1); // 1,1 is open for ChestBlock
-                    this.openedChestPos = targetChestPos;
-                    this.chestOpenTicks = 40 + level.random.nextInt(40); // 2~4秒間開いたまま
-                    owner.isActionActive = true;
-                    // isActionActiveを維持してtickで閉じる処理を行う
-                    return;
+        for (int t = 0; t < numTargets; t++) {
+            BlockPos targetChestPos = chestPositions.get(t);
+            BlockEntity blockEntity = level.getBlockEntity(targetChestPos);
 
-                case 1:
-                    // ② メッセージ/すり替え
-                    boolean foundEmpty = false;
-                    for (int i = 0; i < container.getContainerSize(); i++) {
-                        if (container.getItem(i).isEmpty()) {
-                            ItemStack paper = new ItemStack(Items.PAPER);
-                            String message = com.example.util.HorrorMessages.getRandomMessage(level.random);
-                            paper.setHoverName(Component.literal("§c" + message));
-                            container.setItem(i, paper);
-                            foundEmpty = true;
-                            break;
+            if (blockEntity instanceof Container container) {
+                int actionType = level.random.nextInt(4);
+
+                switch (actionType) {
+                    case 0:
+                        // ① 怪奇現象：チェストが勝手に開く
+                        level.blockEvent(targetChestPos, Blocks.CHEST, 1, 1);
+                        this.openedChestPosList.add(targetChestPos);
+                        openedAny = true;
+                        break;
+
+                    case 1:
+                        // ② メッセージ/すり替え（レベルに応じて枚数増加）
+                        int messageCount = Math.max(1, 1 + rnLevel / 3);
+                        for (int k = 0; k < messageCount; k++) {
+                            boolean foundEmpty = false;
+                            for (int i = 0; i < container.getContainerSize(); i++) {
+                                if (container.getItem(i).isEmpty()) {
+                                    ItemStack paper = new ItemStack(Items.PAPER);
+                                    String message = com.example.util.HorrorMessages.getRandomMessage(level.random);
+                                    paper.setHoverName(Component.literal("§c" + message));
+                                    container.setItem(i, paper);
+                                    foundEmpty = true;
+                                    break;
+                                }
+                            }
+                            if (!foundEmpty) {
+                                // 空きがなければランダムなスロットを腐った肉にする
+                                int randomSlot = level.random.nextInt(container.getContainerSize());
+                                container.setItem(randomSlot, new ItemStack(Items.ROTTEN_FLESH, 1));
+                            }
                         }
-                    }
-                    if (!foundEmpty) {
-                        // 空きがなければランダムなスロットを腐った肉にする
-                        int randomSlot = level.random.nextInt(container.getContainerSize());
-                        container.setItem(randomSlot, new ItemStack(Items.ROTTEN_FLESH, 1));
-                    }
-                    break;
+                        break;
 
-                case 2:
-                    // ③ ぐちゃぐちゃシャッフル
-                    List<ItemStack> items = new ArrayList<>();
-                    for (int i = 0; i < container.getContainerSize(); i++) {
-                        if (!container.getItem(i).isEmpty()) {
-                            items.add(container.getItem(i).copy());
-                            container.setItem(i, ItemStack.EMPTY);
+                    case 2:
+                        // ③ ぐちゃぐちゃシャッフル（チェスト全体なのでそのまま）
+                        List<ItemStack> items = new ArrayList<>();
+                        for (int i = 0; i < container.getContainerSize(); i++) {
+                            if (!container.getItem(i).isEmpty()) {
+                                items.add(container.getItem(i).copy());
+                                container.setItem(i, ItemStack.EMPTY);
+                            }
                         }
-                    }
-                    Collections.shuffle(items);
-                    List<Integer> slots = new ArrayList<>();
-                    for (int i = 0; i < container.getContainerSize(); i++) {
-                        slots.add(i);
-                    }
-                    Collections.shuffle(slots);
-                    
-                    for (int i = 0; i < items.size(); i++) {
-                        container.setItem(slots.get(i), items.get(i));
-                    }
-                    break;
+                        Collections.shuffle(items);
+                        List<Integer> slots = new ArrayList<>();
+                        for (int i = 0; i < container.getContainerSize(); i++) {
+                            slots.add(i);
+                        }
+                        Collections.shuffle(slots);
+                        
+                        for (int i = 0; i < items.size(); i++) {
+                            container.setItem(slots.get(i), items.get(i));
+                        }
+                        break;
 
-                case 3:
-                    // ④ 盗難（ランダムなアイテム1スタックを消去）
-                    List<Integer> filledSlots = new ArrayList<>();
-                    for (int i = 0; i < container.getContainerSize(); i++) {
-                        if (!container.getItem(i).isEmpty()) {
-                            filledSlots.add(i);
+                    case 3:
+                        // ④ 盗難（レベルに応じて盗むスタック数が増加）
+                        int stealCount = Math.max(1, 1 + rnLevel / 5);
+                        for (int k = 0; k < stealCount; k++) {
+                            List<Integer> filledSlots = new ArrayList<>();
+                            for (int i = 0; i < container.getContainerSize(); i++) {
+                                if (!container.getItem(i).isEmpty()) {
+                                    filledSlots.add(i);
+                                }
+                            }
+                            if (!filledSlots.isEmpty()) {
+                                int slotToSteal = filledSlots.get(level.random.nextInt(filledSlots.size()));
+                                container.setItem(slotToSteal, ItemStack.EMPTY);
+                            }
                         }
-                    }
-                    if (!filledSlots.isEmpty()) {
-                        int slotToSteal = filledSlots.get(level.random.nextInt(filledSlots.size()));
-                        container.setItem(slotToSteal, ItemStack.EMPTY);
-                    }
-                    break;
+                        break;
+                }
             }
+        }
+
+        if (openedAny) {
+            this.chestOpenTicks = 40 + level.random.nextInt(40);
+            owner.isActionActive = true;
+            return;
         }
 
         // アニメーション以外の行動は即時終了
@@ -233,10 +256,12 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
     protected void tick(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
         if (this.chestOpenTicks > 0) {
             this.chestOpenTicks--;
-            if (this.chestOpenTicks <= 0 && this.openedChestPos != null) {
+            if (this.chestOpenTicks <= 0 && !this.openedChestPosList.isEmpty()) {
                 // チェストを閉じる
-                level.blockEvent(this.openedChestPos, Blocks.CHEST, 1, 0);
-                this.openedChestPos = null;
+                for (BlockPos pos : this.openedChestPosList) {
+                    level.blockEvent(pos, Blocks.CHEST, 1, 0);
+                }
+                this.openedChestPosList.clear();
                 owner.isActionActive = false;
                 owner.lastWarpTime = level.getGameTime();
             }
@@ -253,9 +278,11 @@ public class ChestAction extends Behavior<HorrorSteveEntity> {
         owner.isActionActive = false;
         
         // 念のため開けっ放しのチェストがあれば閉じる
-        if (this.openedChestPos != null) {
-            level.blockEvent(this.openedChestPos, Blocks.CHEST, 1, 0);
-            this.openedChestPos = null;
+        if (!this.openedChestPosList.isEmpty()) {
+            for (BlockPos pos : this.openedChestPosList) {
+                level.blockEvent(pos, Blocks.CHEST, 1, 0);
+            }
+            this.openedChestPosList.clear();
         }
         this.chestOpenTicks = 0;
     }

@@ -89,6 +89,13 @@ public class SsttaallkkeerrMod implements ModInitializer {
 			new HorrorDebugItem(new Item.Properties().stacksTo(1))
 	);
 
+	// Register House Debug
+	public static final Item HOUSE_DEBUG = Registry.register(
+			BuiltInRegistries.ITEM,
+			new ResourceLocation(MOD_ID, "house_debug"),
+			new com.example.item.HouseDebugItem(new Item.Properties().stacksTo(1))
+	);
+
 	// Register Custom Sounds
 	public static final SoundEvent CREEPY_SOUND_1 = Registry.register(
 			BuiltInRegistries.SOUND_EVENT,
@@ -156,6 +163,7 @@ public class SsttaallkkeerrMod implements ModInitializer {
 		ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(content -> {
 			content.accept(HORROR_STEVE_SPAWN_EGG);
 			content.accept(HORROR_DEBUG_WAND);
+			content.accept(HOUSE_DEBUG);
 		});
 
 		// Register Commands

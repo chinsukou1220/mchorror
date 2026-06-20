@@ -105,6 +105,7 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
                 level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.OSOUTOKI, net.minecraft.sounds.SoundSource.HOSTILE, 1.4F, 1.0F);
                 level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
                 level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.SAKEBIGOE_HAJIME, net.minecraft.sounds.SoundSource.HOSTILE, 1.0F, 1.0F);
                 
                 owner.setMaxUpStep(10.0f);
                 
@@ -140,6 +141,10 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
             if (phase2Ticks > 0 && phase2Ticks % 30 == 0) {
                 level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
                 level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+            }
+            // 間隔を開けずに連続して叫び声終わりを鳴らす（10ティックごと）
+            if (phase2Ticks > 0 && phase2Ticks % 10 == 0) {
+                level.playSound(null, owner.blockPosition(), com.example.SsttaallkkeerrMod.SAKEBIGOE_OWARI, net.minecraft.sounds.SoundSource.HOSTILE, 1.0F, 1.0F);
             }
             // === 1秒（20ティック）ごとにランダムなサブアクション（怪奇現象）を発生 ===
             if (this.tickCount % 20 == 0) {
@@ -272,6 +277,8 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
                 sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
                 sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
                 sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.SAKEBIGOE_HAJIME.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.SAKEBIGOE_OWARI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
             }
         }
         
@@ -304,6 +311,8 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
                 sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
                 sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
                 sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.SAKEBIGOE_HAJIME.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.example.SsttaallkkeerrMod.SAKEBIGOE_OWARI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
             }
         }
         owner.isActionActive = false;

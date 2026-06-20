@@ -2,6 +2,7 @@ package com.example.entity.action;
 
 import com.example.entity.HorrorSteveEntity;
 import com.example.network.ModNetworking;
+import com.example.SsttaallkkeerrMod;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -38,6 +39,9 @@ public class DisplayAction extends Behavior<HorrorSteveEntity> {
                 
                 // ビックリさせるために非常に大きな音を鳴らす（雷の音）
                 level.playSound(null, target.blockPosition(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.HOSTILE, 5.0f, 1.0f);
+                
+                // 追加: osoutoki の音も同時に鳴らす
+                level.playSound(null, target.blockPosition(), SsttaallkkeerrMod.OSOUTOKI, SoundSource.HOSTILE, 0.5f, 1.0f);
             }
         }
         

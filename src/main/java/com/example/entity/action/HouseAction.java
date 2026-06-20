@@ -47,22 +47,52 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
                 Optional<BlockPos> glassOpt = HouseDetector.findNearestGlass(level, target.blockPosition(), 10);
                 Optional<BlockPos> wallOpt = HouseDetector.findNearestWall(level, target.blockPosition(), 10);
                 
+                int rnLevel = 0;
+                if (com.example.world.RedNightManager.isRedNightActive) {
+                    rnLevel = com.example.world.RedNightState.get(level).weaknessLevel;
+                }
+
+                // 基準となる重み（チケット枚数）
+                int baseWeight = 30; 
+                // アクション1,2,3,5,6,7の重み：レベル分だけマイナス（0以下で発生しなくなる）
+                int otherWeight = Math.max(0, baseWeight - rnLevel);
+                // アクション4（壁ぶち抜き）の重み：レベル×6だけプラス
+                int wallBreakWeight = baseWeight + (rnLevel * 6);
+
                 List<Integer> availableActions = new ArrayList<>();
                 if (doorOpt.isPresent()) {
-                    availableActions.add(1); // DoorKnock
-                    availableActions.add(2); // DoorKnock + Open
-                    availableActions.add(6); // SuddenDoorOpen
+                    for (int i = 0; i < otherWeight; i++) {
+                        availableActions.add(1); // DoorKnock
+                        availableActions.add(2); // DoorKnock + Open
+                        availableActions.add(6); // SuddenDoorOpen
+                    }
                 }
                 if (glassOpt.isPresent()) {
-                    availableActions.add(3); // GlassBreak
+                    for (int i = 0; i < otherWeight; i++) {
+                        availableActions.add(3); // GlassBreak
+                    }
                 }
                 if (wallOpt.isPresent()) {
-                    availableActions.add(4); // WallBreak
+                    for (int i = 0; i < wallBreakWeight; i++) {
+                        availableActions.add(4); // WallBreak
+                    }
                 }
+                if (availableActions.isEmpty() && wallOpt.isEmpty() && glassOpt.isEmpty() && doorOpt.isEmpty()) {
+                    for (int i = 0; i < otherWeight; i++) {
+                        availableActions.add(5); // Peek (Cave sounds)
+                    }
+                }
+                for (int i = 0; i < otherWeight; i++) {
+                    availableActions.add(7); // 足音だけが鳴り続けるアクション
+                }
+                
+                // 万が一すべて0になってしまった場合のフェイルセーフ
                 if (availableActions.isEmpty()) {
-                    availableActions.add(5); // Peek
+                    availableActions.add(4); // 壁ぶち抜きを強制（壁があれば）
+                    if (wallOpt.isEmpty()) {
+                        availableActions.add(7); // 壁もなければ足音
+                    }
                 }
-                availableActions.add(7); // 足音だけが鳴り続けるアクション
                 
                 this.actionPhase = availableActions.get(level.random.nextInt(availableActions.size()));
                 this.targetPlayer = target;
@@ -131,7 +161,36 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
         } else if (this.actionPhase == 4) {
             // 壁ぶち抜きアクション（遠隔破壊）
             if (this.tickCount == 40) {
-                level.destroyBlock(this.targetPos, true);
+                int rnLevel = 0;
+                if (com.example.world.RedNightManager.isRedNightActive) {
+                    rnLevel = com.example.world.RedNightState.get(level).weaknessLevel;
+                }
+                int blocksToBreak = Math.max(1, rnLevel * 2);
+
+                java.util.Queue<BlockPos> queue = new java.util.LinkedList<>();
+                java.util.Set<BlockPos> visited = new java.util.HashSet<>();
+                queue.add(this.targetPos);
+                visited.add(this.targetPos);
+
+                int brokenCount = 0;
+                while (!queue.isEmpty() && brokenCount < blocksToBreak) {
+                    BlockPos current = queue.poll();
+                    BlockState state = level.getBlockState(current);
+
+                    // 壁として破壊可能なブロックのみ対象
+                    if (state.canOcclude() && state.getDestroySpeed(level, current) >= 0.0f && state.getDestroySpeed(level, current) < 50.0f) {
+                        level.destroyBlock(current, true);
+                        brokenCount++;
+
+                        for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+                            BlockPos neighbor = current.relative(dir);
+                            if (!visited.contains(neighbor)) {
+                                visited.add(neighbor);
+                                queue.add(neighbor);
+                            }
+                        }
+                    }
+                }
             }
             if (this.tickCount >= 80) {
                 endAction(level, owner);

@@ -33,6 +33,9 @@ public class NaturalSpawnerMixin {
             // RedNightの時だけ自然スポーンの候補に追加（確率はゾンビやスケルトンと全く同じ「重み100」、湧く数も最大4匹の同等設定）
             modified.add(new MobSpawnSettings.SpawnerData(EntityType.GHAST, 100, 4, 4));
             modified.add(new MobSpawnSettings.SpawnerData(EntityType.BLAZE, 100, 4, 4));
+            modified.add(new MobSpawnSettings.SpawnerData(EntityType.PILLAGER, 100, 4, 4));
+            modified.add(new MobSpawnSettings.SpawnerData(EntityType.VINDICATOR, 100, 4, 4)); // イリジャー(ヴィンディケーター)も追加
+            modified.add(new MobSpawnSettings.SpawnerData(EntityType.EVOKER, 20, 1, 1)); // エヴォーカーは少しレアに設定
             
             cir.setReturnValue(WeightedRandomList.create(modified));
         }

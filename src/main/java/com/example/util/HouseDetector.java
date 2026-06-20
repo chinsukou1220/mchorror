@@ -17,7 +17,8 @@ public class HouseDetector {
      * プレイヤーが「家」の中にいるかどうかを判定します。
      * 判定基準：
      * 1. プレイヤーの頭上にブロックがあり、空が見えないこと。
-     * 2. 半径10ブロック以内に、ベッド、作業台、かまど、チェスト、ドアなどの生活ブロックが合計3つ以上あること。
+     * 2-a. ベッド、ドア、作業台などの即判定ブロックが1つでもあれば家と判定。
+     * 2-b. チェスト類・かまど類（チェスト、トラップチェスト、バレル、かまど、燻製器、溶鉱炉）は合計3つ以上で家と判定。
      */
     public static boolean isPlayerInHouse(ServerLevel level, Player player) {
         BlockPos playerPos = player.blockPosition();
@@ -28,7 +29,7 @@ public class HouseDetector {
         }
 
         // 条件2: 生活ブロックが周囲にあるか
-        int lifeBlockCount = 0;
+        int storageBlockCount = 0; // チェスト類・かまど類のカウント
         int radius = 10;
 
         for (int x = -radius; x <= radius; x++) {
@@ -37,10 +38,16 @@ public class HouseDetector {
                     BlockPos pos = playerPos.offset(x, y, z);
                     BlockState state = level.getBlockState(pos);
 
-                    if (isLifeBlock(state)) {
-                        lifeBlockCount++;
-                        if (lifeBlockCount >= 3) {
-                            return true; // 3つ以上見つかれば家と判定
+                    // ベッド、ドア、作業台 → 1つでもあれば即座に家と判定
+                    if (isInstantLifeBlock(state)) {
+                        return true;
+                    }
+
+                    // チェスト類・かまど類 → 3つ以上で家と判定
+                    if (isStorageBlock(state)) {
+                        storageBlockCount++;
+                        if (storageBlockCount >= 3) {
+                            return true;
                         }
                     }
                 }
@@ -150,16 +157,32 @@ public class HouseDetector {
         return Optional.empty();
     }
 
-    private static boolean isLifeBlock(BlockState state) {
+    /**
+     * 1つでもあれば即座に家と判定するブロック（ベッド、ドア、作業台）
+     */
+    private static boolean isInstantLifeBlock(BlockState state) {
         return state.is(BlockTags.BEDS) ||
                state.is(BlockTags.WOODEN_DOORS) ||
                state.is(Blocks.IRON_DOOR) ||
-               state.is(Blocks.CRAFTING_TABLE) ||
-               state.is(Blocks.FURNACE) ||
-               state.is(Blocks.CHEST) ||
+               state.is(Blocks.CRAFTING_TABLE);
+    }
+
+    /**
+     * 3つ以上で家と判定するブロック（チェスト類・かまど類）
+     */
+    private static boolean isStorageBlock(BlockState state) {
+        return state.is(Blocks.CHEST) ||
                state.is(Blocks.TRAPPED_CHEST) ||
                state.is(Blocks.BARREL) ||
+               state.is(Blocks.FURNACE) ||
                state.is(Blocks.SMOKER) ||
                state.is(Blocks.BLAST_FURNACE);
+    }
+
+    /**
+     * すべての生活ブロック（デバッグ表示用）
+     */
+    private static boolean isLifeBlock(BlockState state) {
+        return isInstantLifeBlock(state) || isStorageBlock(state);
     }
 }

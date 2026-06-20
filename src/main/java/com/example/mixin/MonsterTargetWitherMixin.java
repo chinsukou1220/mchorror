@@ -21,5 +21,13 @@ public abstract class MonsterTargetWitherMixin extends net.minecraft.world.entit
     protected void onRegisterGoals(CallbackInfo ci) {
         // スケルトンとブレイズの攻撃対象にウィザーを追加（優先度3）
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WitherBoss.class, true));
+        
+        // スケルトンの場合は、ウィザーやプレイヤーを発見しやすくするために感知射程を限界まで伸ばす
+        if ((Object) this instanceof AbstractSkeleton) {
+            net.minecraft.world.entity.ai.attributes.AttributeInstance attr = this.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE);
+            if (attr != null) {
+                attr.setBaseValue(128.0D);
+            }
+        }
     }
 }
