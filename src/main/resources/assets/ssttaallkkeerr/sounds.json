@@ -123,5 +123,21 @@
         "name": "ssttaallkkeerr:beep"
       }
     ]
+  },
+  "sakebigoe_hajime": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:sakebigoe_hajime"
+      }
+    ]
+  },
+  "sakebigoe_owari": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "ssttaallkkeerr:sakebigoe_owari"
+      }
+    ]
   }
 }

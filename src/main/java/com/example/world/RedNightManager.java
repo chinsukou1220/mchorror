@@ -125,9 +125,12 @@ public class RedNightManager {
             checkedThisNight = false; // 次の夜に向けてリセット
         }
         
-        // 3回目の赤い夜以降、約10分（12000ティック）おきに不気味なチャットを送信する
-        if (level.getGameTime() % 12000 == 0) {
-            RedNightState state = RedNightState.get(level);
+        RedNightState state = RedNightState.get(level);
+        // [RESTORED] チャット間隔: (13 - レベル) 分 = ((13 - レベル) * 1200) ティック、最低1分
+        int chatIntervalTicks = Math.max(1, 13 - state.weaknessLevel) * 1200;
+        
+        // 3回目の赤い夜以降、計算された間隔ごとに不気味なチャットを送信する
+        if (level.getGameTime() % chatIntervalTicks == 0) {
             if (state.weaknessLevel >= 3) {
                 String[] messages = {
                     "Why won't you die?",

@@ -110,11 +110,10 @@ public class SsttaallkkeerrMod implements ModInitializer {
 			new ResourceLocation(MOD_ID, "wqwqwqq"),
 			SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "wqwqwqq"))
 	);
-	public static final SoundEvent BEEP = Registry.register(
-			BuiltInRegistries.SOUND_EVENT,
-			new ResourceLocation(MOD_ID, "beep"),
-			SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "beep"))
-	);
+	public static final SoundEvent BEEP = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "beep"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "beep")));
+	public static final SoundEvent SAKEBIGOE_HAJIME = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "sakebigoe_hajime"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "sakebigoe_hajime")));
+	public static final SoundEvent SAKEBIGOE_OWARI = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "sakebigoe_owari"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "sakebigoe_owari")));
+
 	public static final SoundEvent HORROR_ACCENT_1 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_1"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_1")));
 	public static final SoundEvent HORROR_ACCENT_2 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_2"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_2")));
 	public static final SoundEvent HORROR_ACCENT_3 = Registry.register(BuiltInRegistries.SOUND_EVENT, new ResourceLocation(MOD_ID, "horror_accent_3"), SoundEvent.createVariableRangeEvent(new ResourceLocation(MOD_ID, "horror_accent_3")));

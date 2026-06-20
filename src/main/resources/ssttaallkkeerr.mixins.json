@@ -9,7 +9,9 @@
 		"ServerPlayerGameModeMixin",
 		"ServerPlayerSleepMixin",
 		"MobCategoryMixin",
-		"AnimalMixin"
+		"AnimalMixin",
+		"NaturalSpawnerMixin",
+		"MonsterTargetWitherMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

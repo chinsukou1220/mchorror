@@ -41,7 +41,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         DUPLICATE,
         SKINWALKER,
         SKIN_DEBUG,
-        DISPLAY
+        DISPLAY,
+        INFOG
     }
     
     // 呼び出すための具体的なアクションを保持しておく
@@ -65,6 +66,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
     private final SkinwalkerAction skinwalkerAction = new SkinwalkerAction();
     private final SkinDebugAction skinDebugAction = new SkinDebugAction();
     private final DisplayAction displayAction = new DisplayAction();
+    private final InFogAction inFogAction = new InFogAction();
     
     // 次に実行するアクションの種類
     private ActionType currentAction = ActionType.NONE;
@@ -291,9 +293,21 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     // ==========================================
                     
                     // 通常状態でのランダムワープ抽選（約100秒に1回程度：0.0005）
+                    // 「赤い夜（Red Night）」の間は発生しないように変更
                     if (Math.random() < 0.0005 * multiplier) {
-                        this.currentAction = ActionType.WARP;
-                        return true;
+                        if (!com.example.world.RedNightManager.isRedNightActive) {
+                            this.currentAction = ActionType.WARP;
+                            return true;
+                        }
+                    }
+                    
+                    // 赤い夜専用：霧の中からの凝視 (INFOG)
+                    if (com.example.world.RedNightManager.isRedNightActive) {
+                        int rnLevel = com.example.world.RedNightState.get(level).weaknessLevel;
+                        if (rnLevel < 15 && Math.random() < 0.0005 * multiplier) {
+                            this.currentAction = ActionType.INFOG;
+                            return true;
+                        }
                     }
                     
                     // プレイヤーの置いたブロックを設置するアクション (0.00005)
@@ -425,6 +439,8 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             this.skinDebugAction.tryStart(level, owner, gameTime);
         } else if (this.currentAction == ActionType.DISPLAY) {
             this.displayAction.tryStart(level, owner, gameTime);
+        } else if (this.currentAction == ActionType.INFOG) {
+            this.inFogAction.tryStart(level, owner, gameTime);
         }
         this.currentAction = ActionType.NONE; // リセット
     }
@@ -452,6 +468,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.skinDebugAction.getStatus() == Behavior.Status.RUNNING) return true;
         if (this.displayAction.getStatus() == Behavior.Status.RUNNING) return true;
+        if (this.inFogAction.getStatus() == Behavior.Status.RUNNING) return true;
         
         return owner.isActionActive;
     }
@@ -481,6 +498,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) this.skinwalkerAction.tickOrStop(level, owner, gameTime);
         if (this.skinDebugAction.getStatus() == Behavior.Status.RUNNING) this.skinDebugAction.tickOrStop(level, owner, gameTime);
         if (this.displayAction.getStatus() == Behavior.Status.RUNNING) this.displayAction.tickOrStop(level, owner, gameTime);
+        if (this.inFogAction.getStatus() == Behavior.Status.RUNNING) this.inFogAction.tickOrStop(level, owner, gameTime);
     }
 
     @Override
