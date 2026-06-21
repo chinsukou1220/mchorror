@@ -110,6 +110,21 @@ public class HorrorSteveEntity extends PathfinderMob {
             
             ServerLevel serverLevel = (ServerLevel) this.level();
             
+            // 同一ディメンション内のスティーブ重複チェック（複数体スポーンするのを防ぐ）
+            if (this.tickCount % 60 == 0) {
+                int steveCount = 0;
+                for (net.minecraft.world.entity.Entity e : serverLevel.getAllEntities()) {
+                    if (e instanceof HorrorSteveEntity other) {
+                        steveCount++;
+                        // 自分以外のスティーブで、かつ自分より古い（IDが若い）ものがいたら自分が消去される
+                        if (other != this && other.getId() < this.getId()) {
+                            this.discard();
+                            return; // 自身を消去した直後は残りの処理をしない
+                        }
+                    }
+                }
+            }
+            
             // 毎秒自動回復（再生）
             if (this.tickCount % 20 == 0) {
                 if (this.getHealth() < this.getMaxHealth()) {

@@ -71,8 +71,8 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
             this.dummyMob.setCustomName(net.minecraft.network.chat.Component.literal("skinwalker"));
             this.dummyMob.setCustomNameVisible(false); // 名前は非表示
             
-            // 歩行速度をレベルに応じて上昇させる (Base 0.23 + 0.1 * level)
-            double baseSpeed = 0.23D + (0.1D * rnLevel);
+            // 歩行速度をレベルに応じて上昇させる (Base 0.23 + 0.01 * level)
+            double baseSpeed = 0.23D + (0.01D * rnLevel);
             this.dummyMob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(baseSpeed);
             // 体力を1000に設定（攻撃で倒されてドロップが出るのを防ぐ）
             this.dummyMob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000.0D);

@@ -219,6 +219,11 @@ public class SsttaallkkeerrMod implements ModInitializer {
 			}
 		});
 
+		// プレイヤーがディメンションを移動した時（ネザーやエンドなど）
+		net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
+			com.example.FirstActionManager.onPlayerChangeDimension(player, origin, destination);
+		});
+
 		// Register Red Night Tick Event
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_WORLD_TICK.register(level -> {
 			if (level.dimension() == net.minecraft.world.level.Level.OVERWORLD) {

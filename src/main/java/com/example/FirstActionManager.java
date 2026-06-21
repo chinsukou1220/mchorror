@@ -55,6 +55,27 @@ public class FirstActionManager {
         }
     }
     
+    public static void onPlayerChangeDimension(ServerPlayer player, ServerLevel origin, ServerLevel destination) {
+        // 最初のイベントが終わっているなら、移動先のディメンションにスティーブを送り込む
+        if (FirstActionData.getServerState(player.server).hasFired) {
+            if (destination.dimension().location().getPath().equals("nightmare")) return;
+            
+            // すでに移動先にスティーブがいるか確認
+            boolean hasSteve = false;
+            for (net.minecraft.world.entity.Entity e : destination.getAllEntities()) {
+                if (e instanceof HorrorSteveEntity) {
+                    hasSteve = true;
+                    break;
+                }
+            }
+            
+            // いなければ新しくスポーンさせる
+            if (!hasSteve) {
+                spawnHorrorSteve(destination, player);
+            }
+        }
+    }
+    
     private static void spawnHorrorSteve(ServerLevel level, ServerPlayer player) {
         HorrorSteveEntity steve = SsttaallkkeerrMod.HORROR_STEVE.create(level);
         if (steve != null) {

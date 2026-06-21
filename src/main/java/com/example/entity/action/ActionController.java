@@ -307,10 +307,13 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     
                     // 通常状態でのランダムワープ抽選（約100秒に1回程度：0.0005）
                     // 「赤い夜（Red Night）」の間は発生しないように変更
+                    // 連続発動を防ぐため、最低でも1分（1200ティック）のクールダウンを設ける
                     if (Math.random() < 0.0005 * multiplier) {
                         if (!com.example.world.RedNightManager.isRedNightActive) {
-                            this.currentAction = ActionType.WARP;
-                            return true;
+                            if (level.getGameTime() - owner.lastWarpTime > 1200) {
+                                this.currentAction = ActionType.WARP;
+                                return true;
+                            }
                         }
                     }
                     
