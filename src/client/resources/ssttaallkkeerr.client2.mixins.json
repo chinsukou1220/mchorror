@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "com.example.client.mixin",
+	"package": "com.mittel.ssttaallkkeerr.client.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"client": [
 		"ExampleClientMixin",

@@ -17,7 +17,12 @@ This mod adds a terrifying entity known as the "Horror Steve" and a deadly "Red 
 * **Modpack (モッドパック)**: CurseForgeやModrinthなどでの配布Modpackへは、ご自由に組み込んでいただいて構いません。
 * **二次配布・転載の禁止**: このMod（改変版を含む）を他のサイトへ無断でアップロード・二次配布することは**固く禁じます**。
 
+### About AI Usage / AIの利用について
+* AI was used only for coding. No AI was used for any other elements.
+* コーディングにのみAIを使用しています。他の要素には一切AIを使用していません。
+
 ### Credits / 権利表記
 * **Author**: mittel
+* **GitHub**: [chinsukou1220](https://github.com/chinsukou1220)
 * **Sound Effects**: [OtoLogic](https://otologic.jp/)
 * **License**: All Rights Reserved (無断転載・二次配布禁止)

@@ -1,0 +1,237 @@
+package com.mittel.ssttaallkkeerr.entity.action;
+
+import com.mittel.ssttaallkkeerr.entity.HorrorSteveEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
+
+    private int phase = 0; // 1: Tunneling, 2: Charging
+    private int digTimer = 0;
+    private int phase1Timer = 0;
+    private int chargeTimer = 0;
+    private Player targetPlayer = null;
+
+    public CaveDiggingAmbushBehavior() {
+        super(Map.of(MemoryModuleType.NEAREST_PLAYERS, MemoryStatus.VALUE_PRESENT), 500, 500);
+    }
+
+    @Override
+    protected boolean checkExtraStartConditions(ServerLevel level, HorrorSteveEntity owner) {
+        return true;
+    }
+
+    @Override
+    protected void start(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+        Optional<List<Player>> optionalPlayers = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS);
+        if (optionalPlayers.isPresent() && !optionalPlayers.get().isEmpty()) {
+            Player target = optionalPlayers.get().get(0);
+
+            owner.isActionActive = true;
+            owner.isAggressiveStalking = true; // 視認可能にする
+            owner.setInvisible(false);
+            
+            this.targetPlayer = target;
+            this.phase = 1;
+            this.digTimer = 0;
+            this.phase1Timer = 0;
+            this.chargeTimer = 0;
+
+            // ambushStartPosが設定されている場合はその位置を使用、なければランダム
+            BlockPos spawnPos;
+            if (owner.ambushStartPos != null) {
+                spawnPos = new BlockPos((int)owner.ambushStartPos.x, (int)owner.ambushStartPos.y, (int)owner.ambushStartPos.z);
+                owner.ambushStartPos = null; // 使い終わったらクリア
+            } else {
+                // プレイヤーから約10ブロック離れた位置にスポーン
+                double angle = level.random.nextDouble() * Math.PI * 2;
+                double distance = 10.0;
+                double fx = target.getX() + Math.cos(angle) * distance;
+                double fz = target.getZ() + Math.sin(angle) * distance;
+                // Y座標はプレイヤーと同じか少し上
+                spawnPos = new BlockPos((int)fx, target.blockPosition().getY(), (int)fz);
+            }
+            
+            // テレポート先のブロック（2マス分）を岩盤以外なら破壊
+            breakBlockIfNotBedrock(level, spawnPos);
+            breakBlockIfNotBedrock(level, spawnPos.above());
+            
+            owner.teleportTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+            owner.setInvisible(false); // 確実に姿を現す
+        } else {
+            owner.isActionActive = false;
+        }
+    }
+
+    @Override
+    protected boolean canStillUse(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+        return owner.isActionActive && this.targetPlayer != null;
+    }
+
+    @Override
+    protected void tick(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+        if (!owner.isActionActive || this.targetPlayer == null) {
+            return;
+        }
+
+        if (this.phase == 1) { // 採掘フェーズ
+            this.digTimer++;
+            this.phase1Timer++;
+            
+            // 15秒（300ティック）経っても視線が通らなかった場合は諦めて消滅
+            if (this.phase1Timer >= 300) {
+                endActionAndVanish(level, owner);
+                return;
+            }
+            
+            // 視線が通ったらチャージフェーズへ移行
+            if (owner.getSensing().hasLineOfSight(this.targetPlayer)) {
+                this.phase = 2;
+                owner.setPose(net.minecraft.world.entity.Pose.SWIMMING);
+                level.playSound(null, owner.blockPosition(), com.mittel.ssttaallkkeerr.SsttaallkkeerrMod.OSOUTOKI, net.minecraft.sounds.SoundSource.HOSTILE, 1.4F, 1.0F);
+                // 段差乗り越え高さを10ブロックに設定（崖も駆け上がれるように）
+                owner.setMaxUpStep(10.0f);
+                // 移動速度上昇レベル10 (アンプリファイア9) を10秒間付与
+                owner.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1, false, false));
+                // プレイヤーに10秒間の暗闇効果を付与
+                this.targetPlayer.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 200, 0, false, false));
+                if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer) {
+                    com.mittel.ssttaallkkeerr.network.ModNetworking.sendShakeToPlayer((net.minecraft.server.level.ServerPlayer) this.targetPlayer, 200, 3.0f);
+                }
+                return;
+            }
+            
+            // 20ティック（1秒）ごとに目の前のブロックを破壊して進む
+            if (this.digTimer >= 20) {
+                this.digTimer = 0;
+                
+                Vec3 vecToPlayer = this.targetPlayer.position().subtract(owner.position()).normalize();
+                
+                // 次に進むべきブロックの座標を計算
+                int dx = (int) Math.round(vecToPlayer.x);
+                int dy = (int) Math.round(vecToPlayer.y);
+                int dz = (int) Math.round(vecToPlayer.z);
+                
+                // 真上や真下にしか進めない場合（極端な角度）の補正
+                if (dx == 0 && dz == 0) {
+                    dx = level.random.nextBoolean() ? 1 : -1;
+                }
+                
+                BlockPos nextPos = owner.blockPosition().offset(dx, dy, dz);
+                
+                // ブロック破壊
+                boolean brokeSomething = false;
+                brokeSomething |= breakBlockIfNotBedrock(level, nextPos);
+                brokeSomething |= breakBlockIfNotBedrock(level, nextPos.above());
+                
+                if (!brokeSomething) {
+                    // 何も壊さなかった場合でも足音を鳴らす
+                    level.playSound(null, nextPos, SoundEvents.STONE_STEP, SoundSource.HOSTILE, 1.0f, 0.8f);
+                }
+                
+                // スティーブを前進させる
+                owner.teleportTo(nextPos.getX() + 0.5, nextPos.getY(), nextPos.getZ() + 0.5);
+            }
+            
+        } else if (this.phase == 2) { // 突撃フェーズ（ブロックを破壊しながら突進）
+            // 音のループ再生
+            if (this.chargeTimer % 30 == 0) {
+                level.playSound(null, owner.blockPosition(), com.mittel.ssttaallkkeerr.SsttaallkkeerrMod.KANAKIRIGOE, net.minecraft.sounds.SoundSource.HOSTILE, 0.7F, 1.0F);
+                level.playSound(null, owner.blockPosition(), com.mittel.ssttaallkkeerr.SsttaallkkeerrMod.WQWQWQQ, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+            }
+            this.chargeTimer++;
+            
+            // プレイヤーに向かって猛スピードでナビゲーション
+            owner.getNavigation().moveTo(this.targetPlayer, 2.0D);
+            
+            // 進行方向にあるブロックを毎ティック破壊して道を開ける
+            Vec3 vecToTarget = this.targetPlayer.position().subtract(owner.position()).normalize();
+            int dx = (int) Math.round(vecToTarget.x);
+            int dz = (int) Math.round(vecToTarget.z);
+            BlockPos frontPos = owner.blockPosition().offset(dx, 0, dz);
+            breakBlockIfNotBedrock(level, frontPos);            // 足元（Y+0）
+            breakBlockIfNotBedrock(level, frontPos.above());     // 体（Y+1）
+            breakBlockIfNotBedrock(level, frontPos.above(2));    // 頭上（Y+2）：段差を上る時の天井
+            
+            // 攻撃判定（距離が2.5未満）
+            if (owner.distanceTo(this.targetPlayer) < 2.5) {
+                // 一発殴る（通常攻撃）
+                owner.doHurtTarget(this.targetPlayer);
+                endActionAndVanish(level, owner);
+                return;
+            }
+            
+            // 10秒（200ティック）経っても殴れなかったら強制終了
+            if (this.chargeTimer >= 200) {
+                endActionAndVanish(level, owner);
+                return;
+            }
+        }
+    }
+    
+    private boolean breakBlockIfNotBedrock(ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (!state.isAir() && !state.is(Blocks.BEDROCK)) {
+            level.destroyBlock(pos, true);
+            return true;
+        }
+        return false;
+    }
+
+    private void endActionAndVanish(ServerLevel level, HorrorSteveEntity owner) {
+        // アクション終了時にプレイヤーのエフェクトと揺れを解除する
+        if (this.targetPlayer != null) {
+            this.targetPlayer.removeEffect(MobEffects.DARKNESS);
+            if (this.targetPlayer instanceof net.minecraft.server.level.ServerPlayer sp) {
+                // 強度と時間を0にして送信し、強制的に揺れをストップさせる
+                com.mittel.ssttaallkkeerr.network.ModNetworking.sendShakeToPlayer(sp, 0, 0.0f);
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.mittel.ssttaallkkeerr.SsttaallkkeerrMod.KANAKIRIGOE.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.mittel.ssttaallkkeerr.SsttaallkkeerrMod.WQWQWQQ.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+                sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.mittel.ssttaallkkeerr.SsttaallkkeerrMod.OSOUTOKI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
+            }
+        }
+
+        // 透明化して遠方へワープ
+        owner.setInvisible(true);
+        owner.isAggressiveStalking = false;
+        owner.setMaxUpStep(0.6f); // 段差乗り越え高さを元に戻す
+        
+        double ang = level.random.nextDouble() * Math.PI * 2;
+        double dist = 80.0 + level.random.nextDouble() * 40.0;
+        double fx = owner.getX() + Math.cos(ang) * dist;
+        double fz = owner.getZ() + Math.sin(ang) * dist;
+        double fy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int)fx, (int)fz);
+        
+        owner.teleportTo(fx, fy, fz);
+        
+        owner.isWaitingForWarp = true;
+        owner.isActionActive = false;
+        owner.lastWarpTime = level.getGameTime();
+    }
+
+    @Override
+    protected void stop(ServerLevel level, HorrorSteveEntity owner, long gameTime) {
+        super.stop(level, owner, gameTime);
+        if (owner.isActionActive) {
+            owner.lastWarpTime = gameTime;
+        }
+        owner.isActionActive = false;
+        owner.isAggressiveStalking = false;
+        owner.setMaxUpStep(0.6f); // 段差乗り越え高さを元に戻す（保険）
+    }
+}

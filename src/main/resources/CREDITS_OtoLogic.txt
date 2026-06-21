@@ -1,0 +1,11 @@
+This mod uses sound effects from OtoLogic.
+
+Sound Effects by: OtoLogic
+Website: https://otologic.jp/
+License: CC BY 4.0 (Creative Commons Attribution 4.0 International)
+
+---
+当Modは、OtoLogic様の音声素材を使用しています。
+
+効果音: OtoLogic
+Webサイト: https://otologic.jp/

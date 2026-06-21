@@ -9,17 +9,17 @@
 	],
 	"contact": {
 		"homepage": "",
-		"sources": ""
+		"sources": "https://github.com/chinsukou1220"
 	},
 	"license": "All Rights Reserved",
 	"icon": "assets/ssttaallkkeerr/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.example.SsttaallkkeerrMod"
+			"com.mittel.ssttaallkkeerr.SsttaallkkeerrMod"
 		],
 		"client": [
-			"com.example.client.SsttaallkkeerrModClient"
+			"com.mittel.ssttaallkkeerr.client.SsttaallkkeerrModClient"
 		]
 	},
 	"mixins": [

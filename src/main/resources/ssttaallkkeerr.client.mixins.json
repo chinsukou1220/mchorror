@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.example.mixin",
+  "package": "com.mittel.ssttaallkkeerr.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
     "CameraMixin",
