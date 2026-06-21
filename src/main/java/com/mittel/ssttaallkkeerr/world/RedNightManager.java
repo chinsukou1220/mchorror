@@ -126,13 +126,33 @@ public class RedNightManager {
         // 3回目の赤い夜以降、計算された間隔ごとに不気味なチャットを送信する
         if (level.getGameTime() % chatIntervalTicks == 0) {
             if (state.weaknessLevel >= 3) {
-                String[] messages = {
+                // ホラースティーブがプレイヤーの周囲（128ブロック以内）に存在するかどうかを確認
+                boolean hasHorrorSteve = false;
+                for (ServerPlayer p : level.players()) {
+                    if (!level.getEntitiesOfClass(com.mittel.ssttaallkkeerr.entity.HorrorSteveEntity.class, p.getBoundingBox().inflate(128.0)).isEmpty()) {
+                        hasHorrorSteve = true;
+                        break;
+                    }
+                }
+                
+                if (hasHorrorSteve) {
+                    String[] messages = {
                     "Why won't you die?",
                     "Just die already.",
                     "Why? Why? Why? Why? Why?",
                     "Give up.",
                     "It hurts.",
-                    "You can't escape."
+                    "You can't escape.",
+                    "Need more?",
+                    "I am bleeding.",
+                    "The sky is weeping.",
+                    "Stop running.",
+                    "We are all dead down here.",
+                    "There is no morning.",
+                    "Close your eyes.",
+                    "Don't look up.",
+                    "Why won't you give up?",
+                    "Haven't you had enough?"
                 };
                 String msg = messages[level.random.nextInt(messages.length)];
                 
@@ -150,6 +170,7 @@ public class RedNightManager {
                 for (ServerPlayer player : level.players()) {
                     player.sendSystemMessage(chatMsg);
                 }
+            }
             }
         }
     }

@@ -1,11 +1,11 @@
 {
   "entity.ssttaallkkeerr.horror_steve": "???",
   "entity.ssttaallkkeerr.finalactionsteve": "???",
-  "item.ssttaallkkeerr.horror_steve_spawn_egg": "Spawn ???",
-  "item.ssttaallkkeerr.horror_debug_wand": "Horror Debug Wand",
-  "item.ssttaallkkeerr.house_debug": "house debug",
-  "block.ssttaallkkeerr.ghost_block": "Ghost Block",
-  "item.ssttaallkkeerr.ghost_block": "Ghost Block",
+  "item.ssttaallkkeerr.horror_steve_spawn_egg": "spawn_egg",
+  "item.ssttaallkkeerr.horror_debug_wand": "debug",
+  "item.ssttaallkkeerr.house_debug": "housedebug",
+  "block.ssttaallkkeerr.ghost_block": "asiba",
+  "item.ssttaallkkeerr.ghost_block": "asiba",
   "itemGroup.ssttaallkkeerr.main": "SSTTAALLKKEERR",
   "message.ssttaallkkeerr.warning": "§c[WARNING] This mod contains loud noises, jumpscares, and forced game crashes. Play at your own risk.§r"
 }

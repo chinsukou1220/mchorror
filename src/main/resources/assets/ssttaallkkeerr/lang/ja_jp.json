@@ -1,11 +1,11 @@
 {
   "entity.ssttaallkkeerr.horror_steve": "???",
   "entity.ssttaallkkeerr.finalactionsteve": "???",
-  "item.ssttaallkkeerr.horror_steve_spawn_egg": "???のスポーンエッグ",
-  "item.ssttaallkkeerr.horror_debug_wand": "ホラーデバッグワンド",
-  "item.ssttaallkkeerr.house_debug": "house debug",
-  "block.ssttaallkkeerr.ghost_block": "ゴーストブロック",
-  "item.ssttaallkkeerr.ghost_block": "ゴーストブロック",
+  "item.ssttaallkkeerr.horror_steve_spawn_egg": "spawn_egg",
+  "item.ssttaallkkeerr.horror_debug_wand": "debug",
+  "item.ssttaallkkeerr.house_debug": "housedebug",
+  "block.ssttaallkkeerr.ghost_block": "asiba",
+  "item.ssttaallkkeerr.ghost_block": "asiba",
   "itemGroup.ssttaallkkeerr.main": "SSTTAALLKKEERR",
   "message.ssttaallkkeerr.warning": "§c[警告] このModには大きな音、ジャンプスケア、および意図的なゲームの強制終了が含まれます。自己責任でプレイしてください。§r"
 }
