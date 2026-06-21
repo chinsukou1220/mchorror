@@ -15,6 +15,21 @@ public class RedNightManager {
 
     public static void tick(ServerLevel level) {
         long timeOfDay = level.getDayTime() % 24000;
+        RedNightState globalState = RedNightState.get(level);
+
+        // 赤い夜の間だけ敵モブにバフをかける（以前の状態）
+        if (isRedNightActive && globalState.weaknessLevel > 0 && level.getGameTime() % 100 == 0) {
+            int amplifier = Math.max(0, (globalState.weaknessLevel - 1) / 2); 
+            for (ServerPlayer player : level.players()) {
+                for (net.minecraft.world.entity.monster.Monster monster : level.getEntitiesOfClass(net.minecraft.world.entity.monster.Monster.class, player.getBoundingBox().inflate(128.0))) {
+                    // 攻撃力上昇 (Strength)
+                    monster.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST, 200, amplifier, false, false, false));
+                    // 耐性 (Resistance) - レベル5で無敵になるのを防ぐため最大レベル3 (80%カット) まで
+                    int resAmp = Math.min(amplifier, 3);
+                    monster.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 200, resAmp, false, false, false));
+                }
+            }
+        }
 
         // 夕暮れ時 (13000) ～ 朝 (23000) までが夜
         if (timeOfDay >= 13000 && timeOfDay < 23000) {
@@ -35,25 +50,8 @@ public class RedNightManager {
                 }
             }
             
-            // 赤い夜がアクティブな間、敵モブにバフをかけ続ける
+            // 赤い夜がアクティブな間、ボススポーンなどを処理する
             if (isRedNightActive) {
-                if (level.getGameTime() % 100 == 0) {
-                    RedNightState state = RedNightState.get(level);
-                    // 2回に1回レベルが上がるように調整 (weaknessLevel=1,2で0、3,4で1、5で2...)
-                    int amplifier = Math.max(0, (state.weaknessLevel - 1) / 2); 
-                    for (ServerPlayer player : level.players()) {
-                        // プレイヤーの周囲128ブロック以内の敵モブを取得
-                        for (net.minecraft.world.entity.monster.Monster monster : level.getEntitiesOfClass(net.minecraft.world.entity.monster.Monster.class, player.getBoundingBox().inflate(128.0))) {
-                            // 攻撃力上昇 (Strength)
-                            monster.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST, 200, amplifier, false, false, false));
-                            
-                            // 耐性 (Resistance) - レベル5で無敵になるのを防ぐため最大レベル3 (80%カット) まで
-                            int resAmp = Math.min(amplifier, 3);
-                            monster.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 200, resAmp, false, false, false));
-                        }
-                    }
-                }
-                
                 // 強力なエンティティの自然スポーン処理 (レベルに応じて間隔が短くなる)
                 RedNightState bossState = RedNightState.get(level);
                 // レベル5で1200tick(60秒)、レベルが上がるごとに100tick(5秒)短縮、最短200tick(10秒)
@@ -157,7 +155,7 @@ public class RedNightManager {
                 String msg = messages[level.random.nextInt(messages.length)];
                 
                 // エンティティの名前（文字化け）を生成
-                net.minecraft.network.chat.Component senderName = net.minecraft.network.chat.Component.literal("UnknownEntity")
+                net.minecraft.network.chat.Component senderName = net.minecraft.network.chat.Component.literal("Steve")
                     .withStyle(net.minecraft.ChatFormatting.OBFUSCATED, net.minecraft.ChatFormatting.DARK_GRAY);
                 
                 // チャットの形式: <[文字化け]> メッセージ

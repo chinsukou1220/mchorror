@@ -37,22 +37,10 @@ public class SoundAction extends Behavior<HorrorSteveEntity> {
     public static void playCreepySound(ServerLevel level, Player target) {
         Random rng = new Random();
         SoundEvent[] sounds = {
-            SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR,
             SoundEvents.CREEPER_PRIMED,
             SoundEvents.ENDERMAN_STARE,
             SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH,
-            SoundEvents.STONE_STEP,
-            SsttaallkkeerrMod.CREEPY_SOUND_1,
-            SsttaallkkeerrMod.HORROR_ACCENT_1,
-            SsttaallkkeerrMod.HORROR_ACCENT_2,
-            SsttaallkkeerrMod.HORROR_ACCENT_3,
-            SsttaallkkeerrMod.HORROR_ACCENT_4,
-            SsttaallkkeerrMod.HORROR_ACCENT_5,
-            SsttaallkkeerrMod.HORROR_ACCENT_6,
-            SsttaallkkeerrMod.HORROR_ACCENT_7,
-            SsttaallkkeerrMod.HORROR_ACCENT_8,
-            SsttaallkkeerrMod.HORROR_ACCENT_9,
-            SsttaallkkeerrMod.HORROR_ACCENT_10
+            SoundEvents.STONE_STEP
         };
         SoundEvent selectedSound = sounds[rng.nextInt(sounds.length)];
         double angle = rng.nextDouble() * Math.PI * 2;

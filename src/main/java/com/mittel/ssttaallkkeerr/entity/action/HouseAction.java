@@ -53,22 +53,25 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
                 }
 
                 // 基準となる重み（チケット枚数）
-                int baseWeight = 30; 
+                int baseWeight = 45; 
                 // アクション1,2,3,5,6,7の重み：レベル分だけマイナス（0以下で発生しなくなる）
                 int otherWeight = Math.max(0, baseWeight - rnLevel);
+                int doorWeight = otherWeight / 3; // ドア系は3種類あるため1/3に分割する
+                int glassWeight = Math.max(0, 35 - rnLevel);
+                int footstepWeight = Math.max(0, 55 - rnLevel);
                 // アクション4（壁ぶち抜き）の重み：レベル×6だけプラス
                 int wallBreakWeight = baseWeight + (rnLevel * 6);
 
                 List<Integer> availableActions = new ArrayList<>();
                 if (doorOpt.isPresent()) {
-                    for (int i = 0; i < otherWeight; i++) {
+                    for (int i = 0; i < doorWeight; i++) {
                         availableActions.add(1); // DoorKnock
                         availableActions.add(2); // DoorKnock + Open
                         availableActions.add(6); // SuddenDoorOpen
                     }
                 }
                 if (glassOpt.isPresent()) {
-                    for (int i = 0; i < otherWeight; i++) {
+                    for (int i = 0; i < glassWeight; i++) {
                         availableActions.add(3); // GlassBreak
                     }
                 }
@@ -82,7 +85,7 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
                         availableActions.add(5); // Peek (Cave sounds)
                     }
                 }
-                for (int i = 0; i < otherWeight; i++) {
+                for (int i = 0; i < footstepWeight; i++) {
                     availableActions.add(7); // 足音だけが鳴り続けるアクション
                 }
                 
@@ -133,17 +136,19 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
         owner.setInvisible(true);
         
         if (this.actionPhase == 1 || this.actionPhase == 2) {
-            // ドアアクション（遠隔ノック）
-            if (this.tickCount == 20 || this.tickCount == 35 || this.tickCount == 50) {
-                level.playSound(null, this.targetPos, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.HOSTILE, 0.5f, 1.5f);
+            // ドアアクション（遠隔ノックは1のみ）
+            if (this.actionPhase == 1) {
+                if (this.tickCount == 20 || this.tickCount == 35 || this.tickCount == 50) {
+                    level.playSound(null, this.targetPos, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.HOSTILE, 0.5f, 1.5f);
+                }
             }
             
-            // Phase 2: ドアを遠隔で開ける
-            if (this.actionPhase == 2 && this.tickCount == 65) {
+            // Phase 2: ノックなしで突然ドアをバキッと壊す
+            if (this.actionPhase == 2 && this.tickCount == 40) {
                 BlockState state = level.getBlockState(this.targetPos);
-                if (state.hasProperty(BlockStateProperties.OPEN) && !state.getValue(BlockStateProperties.OPEN)) {
-                    level.setBlock(this.targetPos, state.setValue(BlockStateProperties.OPEN, true), 10);
-                    level.playSound(null, this.targetPos, SoundEvents.WOODEN_DOOR_OPEN, SoundSource.BLOCKS, 1.0f, 1.0f);
+                if (!state.isAir()) {
+                    level.destroyBlock(this.targetPos, true);
+                    level.playSound(null, this.targetPos, SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.HOSTILE, 1.0f, 1.0f);
                 }
             }
             
@@ -165,7 +170,7 @@ public class HouseAction extends Behavior<HorrorSteveEntity> {
                 if (com.mittel.ssttaallkkeerr.world.RedNightManager.isRedNightActive) {
                     rnLevel = com.mittel.ssttaallkkeerr.world.RedNightState.get(level).weaknessLevel;
                 }
-                int blocksToBreak = Math.max(1, rnLevel * 2);
+                int blocksToBreak = Math.max(1, rnLevel * 4);
 
                 java.util.Queue<BlockPos> queue = new java.util.LinkedList<>();
                 java.util.Set<BlockPos> visited = new java.util.HashSet<>();

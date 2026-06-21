@@ -246,16 +246,16 @@ public class HorrorSteveAi {
                         double dotProduct = viewVector.dot(vectorToEntity);
                         
                         // 距離に応じて判定基準を変更（目が合ったかどうかの判定をより厳しく）
-                        // 5ブロック以下：0.5（前方広角） / 0秒(0ティック)
-                        // 20ブロック以下：0.7（前方45度程度） / 0.1秒(2ティック)
-                        // 20ブロック超：0.95（ほぼ画面中央） / 1秒(20ティック)
+                        // 10ブロック以下：0.5（かなり広め） / 0秒(即座)
+                        // 40ブロック以下：0.7（前方45度程度） / 0.1秒(2ティック)
+                        // 40ブロック超：0.95（ほぼ画面中央） / 1秒(20ティック)
                         double thresholdDot;
                         int thresholdTicks;
                         
-                        if (distanceToPlayer <= 5.0) {
+                        if (distanceToPlayer <= 10.0) {
                             thresholdDot = 0.5;
                             thresholdTicks = 0;
-                        } else if (distanceToPlayer <= 20.0) {
+                        } else if (distanceToPlayer <= 40.0) {
                             thresholdDot = 0.7;
                             thresholdTicks = 2;
                         } else {
@@ -280,8 +280,8 @@ public class HorrorSteveAi {
                                     
                                     // 距離に応じた時間（ティック数）見つめ合った場合のみ「見られた」と判定
                                     if (owner.eyeContactTicks >= thresholdTicks) {
-                                        if (distanceToPlayer <= 7.0) {
-                                            // 7ブロック以内の近距離で見られた場合は、即座にワープせず突進モードに移行
+                                        if (distanceToPlayer <= 10.0) {
+                                            // 10ブロック以内の近距離で見られた場合は、即座にワープせず突進モードに移行
                                             owner.isChargingToAttack = true;
                                             owner.setAggressive(true);
                                             owner.chargeTicks = 0;

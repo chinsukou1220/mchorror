@@ -45,7 +45,7 @@ public class FirstActionManager {
                 
                 // サーバー全体に偽の参加ログ（文字化け）を送信
                 // §e は黄色、§k は難読化（文字化けチカチカ）、§r はリセット
-                Component fakeJoinMessage = Component.literal("§e§kllll§r§e joined the game");
+                Component fakeJoinMessage = Component.literal("§e§kSteve§r§e joined the game");
                 server.getPlayerList().broadcastSystemMessage(fakeJoinMessage, false);
                 
                 // 実行済みとしてセーブデータを更新

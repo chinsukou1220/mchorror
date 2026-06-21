@@ -305,10 +305,10 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                 // その他のアクション（全環境）
                 // ==========================================
                     
-                    // 通常状態でのランダムワープ抽選（約100秒に1回程度：0.0005）
+                    // 通常状態でのランダムワープ抽選（約200秒に1回程度：0.00025）
                     // 「赤い夜（Red Night）」の間は発生しないように変更
                     // 連続発動を防ぐため、最低でも1分（1200ティック）のクールダウンを設ける
-                    if (Math.random() < 0.0005 * multiplier) {
+                    if (Math.random() < 0.00025 * multiplier) {
                         if (!com.mittel.ssttaallkkeerr.world.RedNightManager.isRedNightActive) {
                             if (level.getGameTime() - owner.lastWarpTime > 1200) {
                                 this.currentAction = ActionType.WARP;
@@ -376,14 +376,14 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                         }
                     }
                     
-                    // 音を鳴らすホラーアクション (0.0002)
-                    if (Math.random() < 0.0002 * multiplier) {
+                    // 音を鳴らすホラーアクション (0.0001)
+                    if (Math.random() < 0.0001 * multiplier) {
                         this.currentAction = ActionType.SOUND;
                         return true;
                     }
                     
-                    // 不気味なアイテムをドロップするアクション (0.0003)
-                    if (Math.random() < 0.0003 * multiplier) {
+                    // 不気味なアイテムをドロップするアクション (0.00006)
+                    if (Math.random() < 0.00006 * multiplier) {
                         this.currentAction = ActionType.DROP;
                         return true;
                     }
@@ -395,7 +395,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     }
                     
                     // 視界外にいる特定のモブ（村人、猫、犬、イリジャーなど）を殺害するアクション
-                    if (Math.random() < 0.0005 * multiplier) {
+                    if (Math.random() < 0.0001 * multiplier) {
                         this.currentAction = ActionType.KILLING_MOB;
                         return true;
                     }
