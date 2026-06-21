@@ -184,6 +184,7 @@ public class HorrorSteveAi {
                                 double fy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int)fx, (int)fz);
                                 owner.teleportTo(fx, fy, fz);
                                 owner.isWaitingForWarp = true;
+                                owner.isWaiting = true;
                                 owner.lastWarpTime = level.getGameTime();
                             }
                             return; // 硬直中は他の処理をスキップ
@@ -227,6 +228,7 @@ public class HorrorSteveAi {
                                 double fy = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int)fx, (int)fz);
                                 owner.teleportTo(fx, fy, fz);
                                 owner.isWaitingForWarp = true;
+                                owner.isWaiting = true;
                                 owner.lastWarpTime = level.getGameTime();
                             }
                         }
@@ -234,7 +236,7 @@ public class HorrorSteveAi {
                     }
                     
                     // --- 視線と画面内判定 ---
-                    if (!owner.isActionActive) {
+                    if (!owner.isActionActive && !owner.isWaiting) {
                         boolean canSee = owner.getSensing().hasLineOfSight(target);
                         
                         // プレイヤーとの距離を計算

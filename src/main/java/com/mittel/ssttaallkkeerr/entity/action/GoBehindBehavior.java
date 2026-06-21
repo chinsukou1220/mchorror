@@ -67,6 +67,7 @@ public class GoBehindBehavior extends Behavior<HorrorSteveEntity> {
             owner.lastWarpTime = level.getGameTime();
             owner.isAggressiveStalking = true; // 背後にワープした時は歩いて詰めるようにする
             owner.hasBeenSeenSinceWarp = false;
+            owner.isWaiting = false; // ストーキング開始
             owner.isActionActive = false; // アクション終了
         }
     }

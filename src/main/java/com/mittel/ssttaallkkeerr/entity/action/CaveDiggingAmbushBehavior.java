@@ -43,6 +43,7 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
             Player target = optionalPlayers.get().get(0);
 
             owner.isActionActive = true;
+            owner.isWaiting = false;
             owner.isAggressiveStalking = true; // 視認可能にする
             owner.setInvisible(false);
             
@@ -220,6 +221,7 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
         owner.teleportTo(fx, fy, fz);
         
         owner.isWaitingForWarp = true;
+        owner.isWaiting = true;
         owner.isActionActive = false;
         owner.lastWarpTime = level.getGameTime();
     }

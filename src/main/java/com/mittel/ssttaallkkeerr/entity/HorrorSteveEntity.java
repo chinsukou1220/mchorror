@@ -32,6 +32,7 @@ public class HorrorSteveEntity extends PathfinderMob {
     public int postHitWaitTicks = 0; // 殴った後の硬直時間カウンター
     public int chargeTicks = 0; // 突進にかかっている時間（スタック時のタイムアウト用）
     public boolean isWaitingForWarp = false; // ランダムワープ（次の出番）を待機している状態
+    public boolean isWaiting = true; // 新規待機フラグ
     public int invisibleStuckTicks = 0; // 透明状態でのスタック検知用カウンター
     public net.minecraft.world.phys.Vec3 lastInvisiblePos = net.minecraft.world.phys.Vec3.ZERO; // 前回の座標記録用
     public long lastBedActionTime = -72000; // ベッドアクションの30分クールダウン管理用
@@ -242,6 +243,7 @@ public class HorrorSteveEntity extends PathfinderMob {
     public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         compound.putInt("TotalAliveTicks", this.entityData.get(DATA_TOTAL_ALIVE_TICKS_ID));
+        compound.putBoolean("IsWaiting", this.isWaiting);
     }
 
     @Override
@@ -249,6 +251,9 @@ public class HorrorSteveEntity extends PathfinderMob {
         super.readAdditionalSaveData(compound);
         if (compound.contains("TotalAliveTicks")) {
             this.entityData.set(DATA_TOTAL_ALIVE_TICKS_ID, compound.getInt("TotalAliveTicks"));
+        }
+        if (compound.contains("IsWaiting")) {
+            this.isWaiting = compound.getBoolean("IsWaiting");
         }
     }
 }

@@ -41,6 +41,7 @@ public class TimerAction extends Behavior<HorrorSteveEntity> {
             Player target = optionalPlayers.get().get(0);
 
             owner.isActionActive = true;
+            owner.isWaiting = false;
             this.tickCount = 0;
             this.targetPlayer = target;
             this.phase = 1;
@@ -239,6 +240,7 @@ public class TimerAction extends Behavior<HorrorSteveEntity> {
         
         // そのまま逃走（ワープ待機）状態に移行
         owner.isWaitingForWarp = true;
+        owner.isWaiting = true;
         owner.hasBeenSeenSinceWarp = false;
         
         if (this.targetPlayer != null) {

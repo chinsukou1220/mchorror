@@ -93,6 +93,7 @@ public class WalkAwayBehavior extends Behavior<HorrorSteveEntity> {
                 // ストーキング待機モードへ移行
                 owner.hasBeenSeenSinceWarp = false;
                 owner.isWaitingForWarp = false;
+                owner.isWaiting = false;
                 owner.lastWarpTime = level.getGameTime();
             } else {
                 // 行き先が見つからない場合は元の場所に戻って何もしない（アクションキャンセル）

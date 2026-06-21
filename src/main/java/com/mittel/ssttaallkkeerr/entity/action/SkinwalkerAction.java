@@ -85,6 +85,7 @@ public class SkinwalkerAction extends Behavior<HorrorSteveEntity> {
             // スティーブ本体は透明化して待機
             owner.setInvisible(true);
             owner.isActionActive = true;
+            owner.isWaiting = false;
         } else {
             this.finishAction(owner, level);
         }

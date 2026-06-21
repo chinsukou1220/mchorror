@@ -42,6 +42,7 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
             Player target = optionalPlayers.get().get(0);
 
             owner.isActionActive = true;
+            owner.isWaiting = false;
             com.mittel.ssttaallkkeerr.entity.action.SoundAction.playRandomCompressedSound(level, target.blockPosition());
             this.tickCount = 0;
             this.targetPlayer = target;
@@ -283,6 +284,7 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
         }
         
         owner.isWaitingForWarp = true;
+        owner.isWaiting = true;
         owner.hasBeenSeenSinceWarp = false;
         
         if (this.targetPlayer != null) {

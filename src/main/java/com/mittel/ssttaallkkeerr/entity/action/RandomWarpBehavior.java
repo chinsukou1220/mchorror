@@ -71,6 +71,7 @@ public class RandomWarpBehavior extends Behavior<HorrorSteveEntity> {
                 owner.lastWarpTime = level.getGameTime();
                 owner.hasBeenSeenSinceWarp = false;
                 owner.isWaitingForWarp = false; // ストーキング開始！
+                owner.isWaiting = false; // ストーキング開始！
                 owner.isActionActive = false; // アクション終了
             } else {
                 // 壁が見つからなかった場合は遠くにワープして待機を継続する
@@ -84,7 +85,8 @@ public class RandomWarpBehavior extends Behavior<HorrorSteveEntity> {
                 
                 owner.lastWarpTime = level.getGameTime();
                 owner.hasBeenSeenSinceWarp = false;
-                owner.isWaitingForWarp = true; // 引き続き待機
+                owner.isWaitingForWarp = false; // 妥協ワープでもストーキング開始
+                owner.isWaiting = false; // 妥協ワープでもストーキング開始
                 owner.isActionActive = false;
             }
         }

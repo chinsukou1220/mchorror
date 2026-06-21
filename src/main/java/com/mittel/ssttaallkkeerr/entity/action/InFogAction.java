@@ -24,7 +24,7 @@ public class InFogAction extends Behavior<HorrorSteveEntity> {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, HorrorSteveEntity owner) {
-        return owner.isActionActive;
+        return !owner.isActionActive;
     }
 
     @Override
@@ -51,8 +51,10 @@ public class InFogAction extends Behavior<HorrorSteveEntity> {
             
             // tp
             entity.teleportTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+            entity.isWaiting = false;
         } else {
             entity.isActionActive = false;
+            entity.isWaiting = true;
         }
     }
 
@@ -76,6 +78,7 @@ public class InFogAction extends Behavior<HorrorSteveEntity> {
             double fy = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int)fx, (int)fz);
             entity.teleportTo(fx, fy, fz);
             entity.isActionActive = false;
+            entity.isWaiting = true;
         }
     }
 }
