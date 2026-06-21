@@ -2,16 +2,16 @@
 	"schemaVersion": 1,
 	"id": "ssttaallkkeerr",
 	"version": "${version}",
-	"name": "ssttaallkkeerr",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "SSTTAALLKKEERR",
+	"description": "Someone is watching you. Ignore them and live your life.",
 	"authors": [
-		"Me!"
+		"mittel"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "",
+		"sources": ""
 	},
-	"license": "CC0-1.0",
+	"license": "All Rights Reserved",
 	"icon": "assets/ssttaallkkeerr/icon.png",
 	"environment": "*",
 	"entrypoints": {
