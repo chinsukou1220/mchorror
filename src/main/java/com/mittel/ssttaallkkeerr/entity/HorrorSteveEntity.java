@@ -50,6 +50,7 @@ public class HorrorSteveEntity extends PathfinderMob {
     // --- 同期用データ ---
     private static final EntityDataAccessor<Boolean> DATA_CHARGING_ID = SynchedEntityData.defineId(HorrorSteveEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Integer> DATA_TOTAL_ALIVE_TICKS_ID = SynchedEntityData.defineId(HorrorSteveEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_LOCK_LIMBS_ID = SynchedEntityData.defineId(HorrorSteveEntity.class, EntityDataSerializers.BOOLEAN);
 
     public HorrorSteveEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -61,13 +62,12 @@ public class HorrorSteveEntity extends PathfinderMob {
         return false;
     }
 
-
-
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_CHARGING_ID, false);
         this.entityData.define(DATA_TOTAL_ALIVE_TICKS_ID, 0);
+        this.entityData.define(DATA_LOCK_LIMBS_ID, false);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -207,6 +207,25 @@ public class HorrorSteveEntity extends PathfinderMob {
             return false;
         }
         return super.canBeAffected(potioneffect);
+    }
+
+    public void setLockLimbs(boolean lock) {
+        this.entityData.set(DATA_LOCK_LIMBS_ID, lock);
+    }
+
+    public boolean isLimbsLocked() {
+        return this.entityData.get(DATA_LOCK_LIMBS_ID);
+    }
+
+    @Override
+    protected void updateWalkAnimation(float partialTick) {
+        if (this.isLimbsLocked()) {
+            // 歩行アニメーションの進行速度を0にして手足を動かさないようにする
+            this.walkAnimation.update(0.0F, partialTick);
+            this.walkAnimation.setSpeed(0.0F); // 強制的に速度を0に固定
+        } else {
+            super.updateWalkAnimation(partialTick);
+        }
     }
 
     @Override

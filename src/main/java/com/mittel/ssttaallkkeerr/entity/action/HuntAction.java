@@ -317,6 +317,8 @@ public class HuntAction extends Behavior<HorrorSteveEntity> {
                 sp.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(com.mittel.ssttaallkkeerr.SsttaallkkeerrMod.SAKEBIGOE_OWARI.getLocation(), net.minecraft.sounds.SoundSource.HOSTILE));
             }
         }
+        owner.isWaitingForWarp = true;
+        owner.isWaiting = true;
         owner.isActionActive = false;
     }
 }

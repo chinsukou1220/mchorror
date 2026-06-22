@@ -143,6 +143,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     owner.teleportTo(fx, fy, fz);
                 }
                 owner.isWaitingForWarp = true; // 次の出番まで待機
+                owner.isWaiting = true; // 待機状態に戻す
                 owner.hasBeenSeenSinceWarp = false;
                 owner.isActionActive = false;
                 owner.lastWarpTime = level.getGameTime();
@@ -164,6 +165,7 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     owner.teleportTo(fx, fy, fz);
                     
                     owner.isWaitingForWarp = true;
+                    owner.isWaiting = true; // 待機状態に戻す
                     owner.hasBeenSeenSinceWarp = false;
                     owner.isActionActive = false;
                     owner.lastWarpTime = level.getGameTime();
@@ -185,6 +187,14 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
             // アクション待機中（透明化して遠くにいる状態）でない場合は新規アクションを起こさない
             if (!owner.isWaitingForWarp) {
                 return false;
+            }
+            
+            // デバッグ用：現在アクション抽選中であることをアクションバーに表示
+            if (players.isPresent() && !players.get().isEmpty()) {
+                Player target = players.get().get(0);
+                if (target instanceof net.minecraft.server.level.ServerPlayer sp) {
+                    // sp.displayClientMessage(net.minecraft.network.chat.Component.literal("§7[Stalker] アクション抽選中..."), true);
+                }
             }
             
             // --- プレイヤーがベッドで寝ている時のアクション ---
@@ -319,10 +329,15 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
                     
 
                     // 赤い夜専用：霧の中からの凝視 (INFOG)
+                    // 家の中にいる場合は発生しないようにする
                     if (com.mittel.ssttaallkkeerr.world.RedNightManager.isRedNightActive) {
-                        if (Math.random() < 0.00005 * multiplier) {
-                            this.currentAction = ActionType.INFOG;
-                            return true;
+                        if (players.isPresent() && !players.get().isEmpty()) {
+                            if (!com.mittel.ssttaallkkeerr.util.HouseDetector.isPlayerInHouse(level, players.get().get(0))) {
+                                if (Math.random() < 0.00005 * multiplier) {
+                                    this.currentAction = ActionType.INFOG;
+                                    return true;
+                                }
+                            }
                         }
                     }
                     
@@ -509,6 +524,40 @@ public class ActionController extends Behavior<HorrorSteveEntity> {
         if (this.skinDebugAction.getStatus() == Behavior.Status.RUNNING) this.skinDebugAction.tickOrStop(level, owner, gameTime);
         if (this.displayAction.getStatus() == Behavior.Status.RUNNING) this.displayAction.tickOrStop(level, owner, gameTime);
         if (this.inFogAction.getStatus() == Behavior.Status.RUNNING) this.inFogAction.tickOrStop(level, owner, gameTime);
+
+        // デバッグ用：現在実行中のアクションを表示
+        String runningActionName = null;
+        if (this.warpBehavior.getStatus() == Behavior.Status.RUNNING) runningActionName = "WARP";
+        else if (this.goBehindBehavior.getStatus() == Behavior.Status.RUNNING) runningActionName = "GO_BEHIND";
+        else if (this.placeAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "PLACE";
+        else if (this.breakAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "BREAK";
+        else if (this.chestAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "CHEST";
+        else if (this.houseAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "HOUSE";
+        else if (this.signAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "SIGN";
+        else if (this.soundAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "SOUND";
+        else if (this.undergroundAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "UNDERGROUND";
+        else if (this.caveAmbushBehavior.getStatus() == Behavior.Status.RUNNING) runningActionName = "CAVE_AMBUSH";
+        else if (this.walkAwayBehavior.getStatus() == Behavior.Status.RUNNING) runningActionName = "WALK_AWAY";
+        else if (this.bedAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "BED";
+        else if (this.killingMobAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "KILLING_MOB";
+        else if (this.timerAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "TIMER";
+        else if (this.dropAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "DROP";
+        else if (this.huntAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "HUNT";
+        else if (this.duplicateAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "DUPLICATE";
+        else if (this.skinwalkerAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "SKINWALKER";
+        else if (this.skinDebugAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "SKIN_DEBUG";
+        else if (this.displayAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "DISPLAY";
+        else if (this.inFogAction.getStatus() == Behavior.Status.RUNNING) runningActionName = "INFOG";
+
+        if (runningActionName != null) {
+            Optional<List<Player>> players = owner.getBrain().getMemory(MemoryModuleType.NEAREST_PLAYERS);
+            if (players.isPresent() && !players.get().isEmpty()) {
+                Player target = players.get().get(0);
+                if (target instanceof net.minecraft.server.level.ServerPlayer sp) {
+                    // sp.displayClientMessage(net.minecraft.network.chat.Component.literal("§c[Stalker] 実行中: " + runningActionName), true);
+                }
+            }
+        }
     }
 
     @Override

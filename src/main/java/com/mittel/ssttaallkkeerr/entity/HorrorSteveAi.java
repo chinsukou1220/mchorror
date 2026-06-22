@@ -384,6 +384,15 @@ public class HorrorSteveAi {
                                 owner.setSilent(!canSee);
                             }
                         }
+                    } else if (owner.isWaiting && !owner.isActionActive) {
+                        // 待機中は常にプレイヤーから遠ざかるように歩行目標を設定し続ける（かつ足音を消す）
+                        Vec3 posAway = net.minecraft.world.entity.ai.util.DefaultRandomPos.getPosAway(owner, 16, 7, target.position());
+                        if (posAway != null) {
+                            owner.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(posAway, 1.0f, 0));
+                        }
+                        // 完全な待機状態なので透明化と無音を維持する
+                        owner.setInvisible(true);
+                        owner.setSilent(true);
                     }
                     
                     // --- 歩行・視線の制御 ---

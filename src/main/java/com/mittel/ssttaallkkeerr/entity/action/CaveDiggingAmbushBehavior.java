@@ -232,6 +232,8 @@ public class CaveDiggingAmbushBehavior extends Behavior<HorrorSteveEntity> {
         if (owner.isActionActive) {
             owner.lastWarpTime = gameTime;
         }
+        owner.isWaitingForWarp = true;
+        owner.isWaiting = true;
         owner.isActionActive = false;
         owner.isAggressiveStalking = false;
         owner.setMaxUpStep(0.6f); // 段差乗り越え高さを元に戻す（保険）
